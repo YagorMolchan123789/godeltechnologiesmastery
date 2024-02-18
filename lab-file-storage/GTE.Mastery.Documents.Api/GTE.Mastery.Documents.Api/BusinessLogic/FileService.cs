@@ -7,12 +7,17 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         public void CreateFile(string filePath)
         {
             var directory = filePath.Remove(filePath.LastIndexOf("\\"));
+
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
-            var arr = new JsonArray();
-            File.WriteAllText(filePath, arr.ToJsonString());
+            
+            if(!File.Exists(filePath))
+            {
+                var arr = new JsonArray();
+                File.WriteAllText(filePath, arr.ToJsonString());
+            }
         }
     }
 }
