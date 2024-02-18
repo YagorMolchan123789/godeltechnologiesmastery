@@ -55,9 +55,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var query = clients?.Where(c => !c.Tags.Contains("deleted"));
-
-            var client = query?.FirstOrDefault(c => c.Id == clientId);
+            var client = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
 
             if(client == null)
             {
@@ -88,9 +86,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var query = clients?.Where(c => !c.Tags.Contains("deleted"));
-
-            var clientNew = query.FirstOrDefault(c => c.Id == clientId);
+            var clientNew = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
 
             if (clientNew == null)
             {
@@ -114,9 +110,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var query = clients?.Where(c => !c.Tags.Contains("deleted"));
-            
-            var client = query?.FirstOrDefault(c => c.Id == clientId);
+            var client = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
             
             if (client == null)
             {

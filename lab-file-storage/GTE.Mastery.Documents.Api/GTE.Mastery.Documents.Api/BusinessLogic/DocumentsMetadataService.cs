@@ -57,15 +57,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.Where(d => d.ClientId == clientId &&
+            var document = documents?.FirstOrDefault(d => d.ClientId == clientId && d.Id == documentId &&
                 !d.Properties.ContainsKey("deleted"));
-
-            if (query?.Any() == false)
-            {
-                throw new DocumentApiEntityNotFoundException("The client with such Id is not found");
-            }
-
-            var document = query?.FirstOrDefault(d => d.Id == documentId);
 
             if (document == null)
             {
@@ -81,15 +74,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.Where(d => d.ClientId == clientId &&
+            var document = documents?.FirstOrDefault(d => d.ClientId == clientId && d.Id == documentId &&
                 !d.Properties.ContainsKey("deleted"));
-
-            if(query?.Any() == false)
-            {
-                throw new DocumentApiEntityNotFoundException("The client with such Id is not found");
-            }
-
-            var document = query?.FirstOrDefault(d => d.Id == documentId);
 
             if(document == null)
             {
@@ -144,21 +130,14 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.Where(d => d.ClientId == clientId &&
+            var document = documents?.FirstOrDefault(d => d.ClientId == clientId && d.Id == documentId &&
                 !d.Properties.ContainsKey("deleted"));
-
-            if (query?.Any() == false)
-            {
-                throw new DocumentApiEntityNotFoundException("The client with such Id is not found");
-            }
-
-            var document = query?.FirstOrDefault(d => d.Id == documentId);
 
             if (document == null)
             {
-                throw new DocumentApiEntityNotFoundException("The document with such Id is not found");
+                throw new DocumentApiEntityNotFoundException($"Document not found id = {documentId}  clientId={clientId}");
             }
-
+            
             Validate(documentMetadata);
 
             document.FileName = documentMetadata.FileName;
@@ -178,8 +157,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         private void Validate(DocumentMetadata documentMetadata)
         {
             List<string> exceptionMessages = new List<string>();
-
-
 
             if (string.IsNullOrEmpty(documentMetadata.FileName))
             {
