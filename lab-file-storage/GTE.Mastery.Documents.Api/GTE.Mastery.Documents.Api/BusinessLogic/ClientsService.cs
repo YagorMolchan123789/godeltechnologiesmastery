@@ -8,6 +8,10 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
     {
         private readonly string _filePath;
 
+        private readonly Regex _regexEnglishTags = new Regex("[a-zA-Z]");
+        private readonly Regex _regexNumberTags = new Regex("[0-9]");
+        private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
+
         public ClientsService(string filePath)
         {
             _filePath = filePath;
@@ -126,10 +130,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         private void Validate(Client client)
         {
-            List<string> exceptionMessages = new List<string>();
-            Regex regexEnglishTags = new Regex("[a-zA-Z]");
-            Regex regexNumberTags = new Regex("[0-9]");
-            Regex regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
+            List<string> exceptionMessages = new List<string>();                      
 
             if (String.IsNullOrEmpty(client.FirstName))
             {
@@ -170,15 +171,15 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("All the client's tags must be unique");
             }
-            if (client.Tags.Any(t => !regexEnglishTags.IsMatch(t)))
+            if (client.Tags.Any(t => !_regexEnglishTags.IsMatch(t)))
             {
                 exceptionMessages.Add("All the tags must consist of English letters only");
             }
-            if(client.Tags.Any(t => regexNumberTags.IsMatch(t)))
+            if(client.Tags.Any(t => _regexNumberTags.IsMatch(t)))
             {
                 exceptionMessages.Add("No tag must contain the digits");
             }
-            if(client.Tags.Any(t => regexSpecialCharactersTags.IsMatch(t)))
+            if(client.Tags.Any(t => _regexSpecialCharactersTags.IsMatch(t)))
             {
                 exceptionMessages.Add("No tag must contain the special numbers");
             }

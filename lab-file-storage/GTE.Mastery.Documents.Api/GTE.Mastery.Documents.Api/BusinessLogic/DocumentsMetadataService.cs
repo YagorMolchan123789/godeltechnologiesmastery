@@ -7,10 +7,25 @@ using System.Text.RegularExpressions;
 
 namespace GTE.Mastery.Documents.Api.BusinessLogic
 {
-    public class DocumentsMetadataService : IDocumentsMetadataService
+    public partial class DocumentsMetadataService : IDocumentsMetadataService
     {
-
         private string _filePath;
+
+        private readonly string[] _contentTypes = 
+        [
+            "application/pdf",
+            "text/html",
+            "image/jpeg",
+            "image/png",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ];
+
+        private readonly Regex _regexFileName = new Regex("^[a-zA-Z0-9_.-]*$");
+        private readonly Regex _regexProperties = new Regex("[a-zA-Z]");
+        private readonly Regex _regexHexademicalNumbers = new Regex("[0-9a-fA-F]+");
+        private readonly Regex _regexContentLength = new Regex("^[+]?\\d+([.]\\d+)?$");
+
 
         public DocumentsMetadataService(string filePath)
         {
@@ -164,20 +179,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             List<string> exceptionMessages = new List<string>();
 
-            Regex regexFileName = new Regex("^[a-zA-Z0-9_.-]*$");
-            Regex regexProperties = new Regex("[a-zA-Z]");
-            Regex regexHexademicalNumbers = new Regex("[0-9a-fA-F]+");
-            Regex regexContentLength = new Regex("^[+]?\\d+([.]\\d+)?$");
 
-            string[] contentTypes = new string[]
-            {
-                "application/pdf",
-                "text/html",
-                "image/jpeg",
-                "image/png",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            };
 
             if (string.IsNullOrEmpty(documentMetadata.FileName))
             {
@@ -187,7 +189,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("The length of the FileName must be not more than 255 symbols");
             }
-            if (!regexFileName.IsMatch(documentMetadata.FileName))
+            if (!_regexFileName.IsMatch(documentMetadata.FileName))
             {
                 exceptionMessages.Add("The FileName must consist of English alphanumeric letters and digits, ., -, _");
             }
@@ -210,7 +212,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("The ContentLength must be more than 0");
             }
-            if (!regexContentLength.IsMatch(documentMetadata.ContentLength.ToString()))
+            if (!_regexContentLength.IsMatch(documentMetadata.ContentLength.ToString()))
             {
                 exceptionMessages.Add("The ContentLength must contain only of the numbers");
             }
@@ -227,7 +229,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("The length of the key of the Properties must be not more than 20 symbols");
             }
-            if (documentMetadata.Properties.Keys.Any(k => !regexProperties.IsMatch(k)))
+            if (documentMetadata.Properties.Keys.Any(k => !_regexProperties.IsMatch(k)))
             {
                 exceptionMessages.Add("All the keys of the Properites must consist of English letters only");
             }
@@ -240,7 +242,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("The length of the ContentType must be not more than 100 symbols");
             }
-            if (!contentTypes.Contains(documentMetadata.ContentType))
+            if (!_contentTypes.Contains(documentMetadata.ContentType))
             {
                 exceptionMessages.Add("The ContentType is unknown");
             }
@@ -257,7 +259,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("The ContentMD5 is too long");
             }
-            if (!regexHexademicalNumbers.IsMatch(documentMetadata.ContentMd5))
+            if (!_regexHexademicalNumbers.IsMatch(documentMetadata.ContentMd5))
             {
                 exceptionMessages.Add("The ContentMD5 must consist of hexademical numbers only");
             }
@@ -267,8 +269,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 throw new DocumentApiValidationException(exceptionMessage);
             }
-
-
 
         }
     }
