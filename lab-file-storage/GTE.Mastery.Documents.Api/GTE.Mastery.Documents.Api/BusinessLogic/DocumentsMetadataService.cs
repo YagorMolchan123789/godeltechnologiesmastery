@@ -21,8 +21,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             Validate(documentMetadata);
 
-            var jsonOptions = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(jsonOptions);
+            var documentsJson = File.ReadAllText(_filePath);
+            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
 
             documentMetadata.Id = (documents?.Count == 0) ? 1 : documents.Max(d => d.Id) + 1;
             documentMetadata.ClientId = clientId;
@@ -40,9 +40,9 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task DeleteDocumentAsync(int clientId, int documentId)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(jsonOptions);
-            var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
+            var documentsJson = File.ReadAllText(_filePath);
+            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
+            var query = documents?.Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
             if (query?.Any() == false)
@@ -64,8 +64,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task<DocumentMetadata> GetDocumentAsync(int clientId, int documentId)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(jsonOptions);
+            var documentsJson = File.ReadAllText(_filePath);
+            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
             var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
@@ -96,8 +96,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
-            var jsonOptions = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(jsonOptions);
+            var documentsJson = File.ReadAllText(_filePath);
+            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
             var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
@@ -127,8 +127,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadata documentMetadata)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(jsonOptions);
+            var documentsJson = File.ReadAllText(_filePath);
+            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
             var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
