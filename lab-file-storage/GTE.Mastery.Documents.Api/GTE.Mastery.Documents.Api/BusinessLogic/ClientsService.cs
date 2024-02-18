@@ -24,8 +24,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
             var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
 
             if (skip != null && skip > 0)
@@ -49,9 +49,9 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task<Client> GetClientAsync(int clientId)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
-            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var query = clients?.Where(c => !c.Tags.Contains("deleted"));
 
             var client = query?.FirstOrDefault(c => c.Id == clientId);
 
@@ -67,14 +67,14 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             Validate(client);
 
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
 
             client.Id = (clients?.Count == 0) ? 1 : clients.Max(c => c.Id) + 1;
             clients?.Add(client);
 
-            var jsonCollection = JsonSerializer.Serialize<List<Client>>(clients);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
+            File.WriteAllText(_filePath, serializedClients);
 
             return client;
 
@@ -82,9 +82,9 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task<Client> UpdateClientAsync(int clientId, Client client)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
-            IQueryable<Client> query = clients.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var query = clients?.Where(c => !c.Tags.Contains("deleted"));
 
             var clientNew = query.FirstOrDefault(c => c.Id == clientId);
 
@@ -100,17 +100,17 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             clientNew.DateOfBirth = client.DateOfBirth;
             clientNew.Tags = client.Tags;
 
-            var jsonCollection = JsonSerializer.Serialize(clients);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedClients = JsonSerializer.Serialize(clients);
+            File.WriteAllText(_filePath, serializedClients);
 
             return clientNew;
         }
 
         public async Task DeleteClientAsync(int clientId)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
-            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var query = clients?.Where(c => !c.Tags.Contains("deleted"));
             
             var client = query?.FirstOrDefault(c => c.Id == clientId);
             
@@ -120,8 +120,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             client.Tags = client.Tags.Concat(new string[] { "deleted" }).ToArray();
-            var jsonCollection = JsonSerializer.Serialize<List<Client>>(clients);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
+            File.WriteAllText(_filePath, serializedClients);
         }
 
         private void Validate(Client client)

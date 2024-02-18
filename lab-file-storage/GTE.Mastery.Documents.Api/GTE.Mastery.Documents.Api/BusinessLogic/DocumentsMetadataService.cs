@@ -28,12 +28,12 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             documentMetadata.ClientId = clientId;
             documents.Add(documentMetadata);
 
-            var jsonCollection = JsonSerializer.Serialize<List<DocumentMetadata>>(documents, new JsonSerializerOptions
+            var serializedDocuments = JsonSerializer.Serialize<List<DocumentMetadata>>(documents, new JsonSerializerOptions
             {
                 AllowTrailingCommas = true
             });
 
-            File.WriteAllText(_filePath, jsonCollection);
+            File.WriteAllText(_filePath, serializedDocuments);
             return documentMetadata;
 
         }
@@ -58,15 +58,15 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             document.Properties["deleted"] = "true";
-            var jsonCollection = JsonSerializer.Serialize<List<DocumentMetadata>>(documents);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedDocuments = JsonSerializer.Serialize<List<DocumentMetadata>>(documents);
+            File.WriteAllText(_filePath, serializedDocuments);
         }
 
         public async Task<DocumentMetadata> GetDocumentAsync(int clientId, int documentId)
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
+            var query = documents?.Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
             if(query?.Any() == false)
@@ -129,7 +129,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
+            var query = documents?.Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
             if (query?.Any() == false)
@@ -154,8 +154,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             document.ContentType = documentMetadata.ContentType;
             document.ContentMd5 = documentMetadata.ContentMd5;
 
-            var jsonCollcetion = JsonSerializer.Serialize(documents);
-            File.WriteAllText(_filePath, jsonCollcetion);
+            var serializedDocuments = JsonSerializer.Serialize(documents);
+            File.WriteAllText(_filePath, serializedDocuments);
 
             return document;
         }
