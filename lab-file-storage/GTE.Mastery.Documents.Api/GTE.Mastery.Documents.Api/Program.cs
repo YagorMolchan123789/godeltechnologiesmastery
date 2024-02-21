@@ -25,7 +25,7 @@ builder.Services.AddEndpointsApiExplorer();
 // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-8.0
 builder.Services.Configure<DocumentStorageOptions>(builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey));
 
-builder.Services.AddSingleton<IFileService, FileService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 // Register and configure Swagger generator services
 builder.Services.AddSwaggerGen(c =>
@@ -58,6 +58,15 @@ var fileService = app.Services.GetService<IFileService>();
 
 fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
         .Value.ClientPath);
+
+fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
+        .Value.DocumentPath);
+
+fileService.CreateDirectory(app.Services.GetService<IOptions<DocumentStorageOptions>>()
+        .Value.DocumentBlobPath);
+
+fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
+        .Value.ContentPath);
 
 
 // Configure the HTTP request pipeline.

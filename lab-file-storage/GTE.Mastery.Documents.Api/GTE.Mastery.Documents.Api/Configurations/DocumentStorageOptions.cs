@@ -9,5 +9,7 @@
         public required string DocumentPath { get; set; }
 
         public required string DocumentBlobPath { get; set; }
+
+        public required string ContentPath { get; set; }
     }
 }

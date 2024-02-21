@@ -3,5 +3,6 @@
     public interface IFileService
     {
         void CreateFile(string filePath);
+        void CreateDirectory(string directory);
     }
 }

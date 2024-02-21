@@ -11,8 +11,20 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 Directory.CreateDirectory(directory);
             }
-            var arr = new JsonArray();
-            File.WriteAllText(filePath, arr.ToJsonString());
+
+            if (!File.Exists(filePath))
+            {
+                var arr = new JsonArray();
+                File.WriteAllText(filePath, arr.ToJsonString());
+            }
+        }
+
+        public void CreateDirectory(string directory)
+        {
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
         }
     }
 }

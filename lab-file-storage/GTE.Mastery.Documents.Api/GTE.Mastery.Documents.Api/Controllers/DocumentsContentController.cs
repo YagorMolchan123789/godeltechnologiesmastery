@@ -12,6 +12,7 @@ namespace GTE.Mastery.Documents.Api.Controllers
     public sealed class DocumentsContentController : ControllerBase
     {
         private readonly IDocumentsContentService _documentsContentService;
+        private readonly IDocumentsMetadataService _documentsMetadataService;
 
         public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig)
         {
@@ -20,7 +21,10 @@ namespace GTE.Mastery.Documents.Api.Controllers
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath);
+            _documentsMetadataService = new DocumentsMetadataService(documentStorageConfig.Value.DocumentPath);
+            _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath,
+                documentStorageConfig.Value.ContentPath,
+                _documentsMetadataService);
         }
 
         /// <summary>
