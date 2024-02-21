@@ -69,6 +69,10 @@ fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>
         .Value.ContentPath);
 
 
+fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
+        .Value.DocumentPath);
+
+
 // Configure the HTTP request pipeline.
 if (true || app.Environment.IsDevelopment())
 {

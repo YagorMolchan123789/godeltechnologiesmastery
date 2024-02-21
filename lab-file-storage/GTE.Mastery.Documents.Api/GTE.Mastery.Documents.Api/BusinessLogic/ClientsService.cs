@@ -8,6 +8,10 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
     {
         private readonly string _filePath;
 
+        private readonly Regex _regexEnglishTags = new Regex("[a-zA-Z]");
+        private readonly Regex _regexNumberTags = new Regex("[0-9]");
+        private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
+
         public ClientsService(string filePath)
         {
             _filePath = filePath;
@@ -24,8 +28,8 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
             var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
 
             if (skip != null && skip > 0)
@@ -49,11 +53,9 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task<Client> GetClientAsync(int clientId)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
-            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
-
-            var client = query?.FirstOrDefault(c => c.Id == clientId);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var client = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
 
             if(client == null)
             {
@@ -67,14 +69,14 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             Validate(client);
 
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
 
             client.Id = (clients?.Count == 0) ? 1 : clients.Max(c => c.Id) + 1;
             clients?.Add(client);
 
-            var jsonCollection = JsonSerializer.Serialize<List<Client>>(clients);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
+            File.WriteAllText(_filePath, serializedClients);
 
             return client;
 
@@ -82,11 +84,9 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         public async Task<Client> UpdateClientAsync(int clientId, Client client)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
-            IQueryable<Client> query = clients.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
-
-            var clientNew = query.FirstOrDefault(c => c.Id == clientId);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var clientNew = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
 
             if (clientNew == null)
             {
@@ -100,19 +100,17 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             clientNew.DateOfBirth = client.DateOfBirth;
             clientNew.Tags = client.Tags;
 
-            var jsonCollection = JsonSerializer.Serialize(clients);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedClients = JsonSerializer.Serialize(clients);
+            File.WriteAllText(_filePath, serializedClients);
 
             return clientNew;
         }
 
         public async Task DeleteClientAsync(int clientId)
         {
-            var jsonOptions = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(jsonOptions);
-            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
-            
-            var client = query?.FirstOrDefault(c => c.Id == clientId);
+            var clientsJson = File.ReadAllText(_filePath);
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var client = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
             
             if (client == null)
             {
@@ -120,16 +118,13 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             client.Tags = client.Tags.Concat(new string[] { "deleted" }).ToArray();
-            var jsonCollection = JsonSerializer.Serialize<List<Client>>(clients);
-            File.WriteAllText(_filePath, jsonCollection);
+            var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
+            File.WriteAllText(_filePath, serializedClients);
         }
 
         private void Validate(Client client)
         {
-            List<string> exceptionMessages = new List<string>();
-            Regex regexEnglishTags = new Regex("[a-zA-Z]");
-            Regex regexNumberTags = new Regex("[0-9]");
-            Regex regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
+            List<string> exceptionMessages = new List<string>();                      
 
             if (String.IsNullOrEmpty(client.FirstName))
             {
@@ -170,15 +165,15 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 exceptionMessages.Add("All the client's tags must be unique");
             }
-            if (client.Tags.Any(t => !regexEnglishTags.IsMatch(t)))
+            if (client.Tags.Any(t => !_regexEnglishTags.IsMatch(t)))
             {
                 exceptionMessages.Add("All the tags must consist of English letters only");
             }
-            if(client.Tags.Any(t => regexNumberTags.IsMatch(t)))
+            if(client.Tags.Any(t => _regexNumberTags.IsMatch(t)))
             {
                 exceptionMessages.Add("No tag must contain the digits");
             }
-            if(client.Tags.Any(t => regexSpecialCharactersTags.IsMatch(t)))
+            if(client.Tags.Any(t => _regexSpecialCharactersTags.IsMatch(t)))
             {
                 exceptionMessages.Add("No tag must contain the special numbers");
             }
