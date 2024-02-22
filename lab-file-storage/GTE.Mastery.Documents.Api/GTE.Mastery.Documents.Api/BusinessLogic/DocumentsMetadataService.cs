@@ -126,6 +126,15 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         }
 
+        public async Task<IEnumerable<DocumentMetadata>> GetDocumentsAsync(int clientId)
+        {
+            var documentsJson = File.ReadAllText(_filePath);
+            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
+            var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
+                !d.Properties.ContainsKey("deleted"));
+
+            return query?.ToList();
+        }
         public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadata documentMetadata)
         {
             var documentsJson = File.ReadAllText(_filePath);

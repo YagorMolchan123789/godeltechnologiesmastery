@@ -12,6 +12,8 @@ namespace GTE.Mastery.Documents.Api.Controllers
     public sealed class ClientsController : ControllerBase
     {
         private readonly IClientsService _clientsService;
+        private readonly IDocumentsMetadataService _documentsMetadataService;
+        private readonly IFileService _fileService;
 
         public ClientsController(IOptions<DocumentStorageOptions> documentStorageConfig)
         {
@@ -20,7 +22,10 @@ namespace GTE.Mastery.Documents.Api.Controllers
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _clientsService = new ClientsService(documentStorageConfig.Value.ClientPath);
+            _fileService = new FileService();
+            _documentsMetadataService = new DocumentsMetadataService(documentStorageConfig.Value.DocumentPath);
+            _clientsService = new ClientsService(documentStorageConfig.Value.ClientPath, documentStorageConfig.Value.DocumentBlobPath,
+                _documentsMetadataService, _fileService);
         }
 
         /// <summary>

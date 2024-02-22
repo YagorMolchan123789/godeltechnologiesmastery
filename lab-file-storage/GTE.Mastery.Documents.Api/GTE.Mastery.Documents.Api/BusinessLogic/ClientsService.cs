@@ -7,14 +7,21 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
     public class ClientsService : IClientsService
     {
         private readonly string _filePath;
+        private readonly string _blobPath;
+        private readonly IDocumentsMetadataService _documentsMetadataService;
+        private readonly IFileService _fileService;
 
         private readonly Regex _regexEnglishTags = new Regex("[a-zA-Z]");
         private readonly Regex _regexNumberTags = new Regex("[0-9]");
         private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
 
-        public ClientsService(string filePath)
+        public ClientsService(string filePath, string blobPath, IDocumentsMetadataService documentsMetadataService,
+            IFileService fileService)
         {
             _filePath = filePath;
+            _blobPath = blobPath;
+            _documentsMetadataService = documentsMetadataService;
+            _fileService = fileService;
         }
 
         public async Task<IEnumerable<Client>> ListClientsAsync(int? skip, int? take, string[]? tags)
@@ -95,6 +102,12 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
             Validate(client);
 
+            client.Id = clientId;
+
+            string sourcePath = _blobPath + "/" + clientNew.ToString();
+            string targetPath = _blobPath + "/" + client.ToString();
+            _fileService.RenameDirectory(sourcePath, targetPath);
+
             clientNew.FirstName = client.FirstName;
             clientNew.LastName = client.LastName;
             clientNew.DateOfBirth = client.DateOfBirth;
@@ -116,6 +129,19 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 throw new DocumentApiEntityNotFoundException("The client with the specified Id is not found");
             }
+
+            var documents = await _documentsMetadataService.GetDocumentsAsync(clientId);
+
+            if(documents.Any())
+            {
+                foreach (var document in documents)
+                {
+                    _documentsMetadataService?.DeleteDocumentAsync(clientId, document.Id);
+                }
+            }
+
+            string targetPath = _blobPath + "/" + client.ToString();
+            _fileService.DeleteDirectory(targetPath);
 
             client.Tags = client.Tags.Concat(new string[] { "deleted" }).ToArray();
             var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
@@ -200,6 +226,11 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             return age.Value;
+        }
+
+        public Task<IEnumerable<Client>> GetDocuments(int clientId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

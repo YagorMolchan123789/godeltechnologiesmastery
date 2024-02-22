@@ -11,20 +11,26 @@ namespace GTE.Mastery.Documents.Api.Controllers
     [DoNotModify]
     public sealed class DocumentsContentController : ControllerBase
     {
+        private readonly IClientsService _clientsService;
         private readonly IDocumentsContentService _documentsContentService;
         private readonly IDocumentsMetadataService _documentsMetadataService;
+        private readonly IFileService _fileService;
 
-        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig)
+        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService)
         {
             if (documentStorageConfig == null)
             {
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
+            _fileService = fileService;
             _documentsMetadataService = new DocumentsMetadataService(documentStorageConfig.Value.DocumentPath);
+
+            _clientsService = new ClientsService(documentStorageConfig.Value.ClientPath, documentStorageConfig
+                .Value.DocumentBlobPath, _documentsMetadataService, _fileService);
+
             _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath,
-                documentStorageConfig.Value.ContentPath,
-                _documentsMetadataService);
+                _documentsMetadataService, _clientsService, _fileService);
         }
 
         /// <summary>

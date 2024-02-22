@@ -54,7 +54,8 @@ builder.Services.AddSwaggerGen(c =>
 
 WebApplication app = builder.Build();
 
-var fileService = app.Services.GetService<IFileService>();
+using var scope = app.Services.CreateScope();
+var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
 
 fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
         .Value.ClientPath);
@@ -64,14 +65,6 @@ fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>
 
 fileService.CreateDirectory(app.Services.GetService<IOptions<DocumentStorageOptions>>()
         .Value.DocumentBlobPath);
-
-fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
-        .Value.ContentPath);
-
-
-fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
-        .Value.DocumentPath);
-
 
 // Configure the HTTP request pipeline.
 if (true || app.Environment.IsDevelopment())

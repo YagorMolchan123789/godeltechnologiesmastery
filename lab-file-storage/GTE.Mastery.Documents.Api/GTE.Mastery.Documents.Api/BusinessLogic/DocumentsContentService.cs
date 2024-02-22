@@ -11,100 +11,120 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
     public class DocumentsContentService : IDocumentsContentService
     {
         private readonly string _blobPath;
-        private readonly string _contentPath;
         private readonly IDocumentsMetadataService _documentsMetadataService;
+        private readonly IClientsService _clientsService;
+        private readonly IFileService _fileService;
 
         private readonly int _maxContentLength = 1000000;
 
-        public DocumentsContentService(string blobPath, string contentPath, IDocumentsMetadataService documentsMetadataService)
+        public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService, IClientsService clientsService, IFileService fileService)
         {
             _blobPath = blobPath;
-            _contentPath = contentPath;
             _documentsMetadataService = documentsMetadataService;
+            _clientsService = clientsService;
+            _fileService = fileService;
         }
 
         public async Task UploadDocumentAsync(int clientId, int documentId, MemoryStream content)
         {
+            var client = await _clientsService.GetClientAsync(clientId);
             var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
 
+            if ( client == null)
+            {
+                throw new DocumentApiEntityNotFoundException("The client with such Id is not found");
+            }
+            if (document == null)
+            {
+                throw new DocumentApiEntityNotFoundException("The document with such Id is not found");
+            }            
+
+            ValidateUpload(content);
+
+            var contentMd5Hash = CalculateMd5Hash(content);
+
+            document.ContentLength = (int)content.Length;
+            document.ContentMd5 = contentMd5Hash;
+
+            DocumentMetadata metadata = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, document);
+            string targetDirectory = _blobPath + "/" + client.ToString();
+            string targetPath = targetDirectory + "/" + metadata.FileName;
+
+            _fileService.CreateDirectory(targetDirectory);
+
+            FileStream uploadStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
+            uploadStream.Write(content.ToArray(), 0, metadata.ContentLength);
+            uploadStream.Close();
+            
+        }
+
+        public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)
+        {
+            var client = await _clientsService.GetClientAsync(clientId);
+            var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
+
+            if (client == null)
+            {
+                throw new DocumentApiEntityNotFoundException("The client with such Id is not found");
+            }
             if (document == null)
             {
                 throw new DocumentApiEntityNotFoundException("The document with such Id is not found");
             }
 
-            DocumentMetadata documentMetadata = new DocumentMetadata
+            string targetDirectory = _blobPath + "/" + client.ToString();
+            string targetPath = targetDirectory + "/" + document.FileName;
+
+            if (_fileService.Exists(targetPath) == false)
             {
-                FileName = document.FileName,
-                Title = document.Title,
-                ContentType = document.ContentType,
-                ContentLength = (int)content.Length,
-                ContentMd5 = CalculateMd5Hash(content)
-            };
-
-            DocumentMetadata metadata = await _documentsMetadataService.CreateDocumentAsync(clientId, documentMetadata);
-
-            var contentsJson = File.ReadAllText(_contentPath);
-            var contents = JsonSerializer.Deserialize<List<DocumentContent>>(contentsJson);
-
-            DocumentContent documentContent = new DocumentContent
-            {
-                Id = (contents?.Count == 0) ? 1 : contents.Max(c => c.Id) +1,
-                Metadata = metadata,
-                Blob = content.ToArray(),
-                Md5Hash = metadata.ContentMd5
-            };
-
-            Validate(documentContent);
-            contents.Add(documentContent);
-            var serializedContents = JsonSerializer.Serialize(contents);
-            File.WriteAllText(_contentPath, serializedContents);
-        }
-
-        public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)
-        {
-            var contentsJson = File.ReadAllText(_contentPath);
-            var contents = JsonSerializer.Deserialize<List<DocumentContent>>(contentsJson);
-            DocumentContent documentContent = contents.FirstOrDefault(c => c.Metadata.ClientId == clientId &&
-                c.Id == documentId);
-
-            if (documentContent == null)
-            {
-                throw new DocumentApiEntityNotFoundException("The document with such Id is not found");
+                throw new DocumentApiEntityNotFoundException("The file does not exist");
             }
 
-            Validate(documentContent);
+            MemoryStream content = new MemoryStream();
+            byte[] buffer = new byte[document.ContentLength];
 
-            string targetPath = _blobPath + "\\" + documentContent.Metadata?.FileName;
+            FileStream metadataStream = new FileStream(targetPath, FileMode.Open, FileAccess.Read);
+            metadataStream.Read(buffer, 0, buffer.Length);
+            content.Write(buffer, 0, buffer.Length);
 
-            MemoryStream blobStream = new MemoryStream();
-            blobStream.Write(documentContent.Blob, 0, documentContent.Metadata.ContentLength);
-            blobStream.Position = 0;
+            ValidateDownload(content, document);
+            FileStream downloadStream = new FileStream(string.Concat(_blobPath, "/", document.FileName), FileMode.Create, FileAccess.Write);
+            content.Position = 0;
+            downloadStream.Write(content.ToArray(), 0, document.ContentLength);
 
-            FileStream metadataStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
-            metadataStream.Write(blobStream.ToArray(), 0, documentContent.Metadata.ContentLength);
-                      
+            metadataStream.Close();
+            downloadStream.Close();
 
-            ReceiveDocumentResponse receiveDocumentResponse = new(blobStream, documentContent.Metadata);
+            ReceiveDocumentResponse receiveDocumentResponse = new(content, document);
             return receiveDocumentResponse;
         }
 
-        private void Validate(DocumentContent documentContent)
+        private void ValidateUpload(MemoryStream content)
         {
-            List<string> exceptionMessages = new List<string>();
+            List<string> exceptionMessages = new List<string>();            
 
-            if (documentContent.Metadata.ContentLength > _maxContentLength)
+            if (content.ToArray().Length > _maxContentLength)
             {
                 exceptionMessages.Add($"The storage does not support files larger than {_maxContentLength * Math.Pow(10, -6)} in size");
             }
-            if (documentContent.Blob.Length != documentContent.Metadata.ContentLength)
+
+            if (exceptionMessages.Any())
             {
-                exceptionMessages.Add("A size of the file must be equal to the size of the uploaded blob");
+                string exceptionMessage = string.Join(". ", exceptionMessages);
+                throw new DocumentApiValidationException(exceptionMessage);
             }
-            if (documentContent.Md5Hash != documentContent.Metadata.ContentMd5)
+        }
+
+        private void ValidateDownload(MemoryStream content, DocumentMetadata metadata)
+        {
+            List<string> exceptionMessages = new List<string>();
+            var md5Hash = CalculateMd5Hash(content);
+
+            if (md5Hash != metadata.ContentMd5)
             {
                 exceptionMessages.Add("Md5 hash of the file does not match the md5 hash in metadata");
             }
-            
+
             if (exceptionMessages.Any())
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
@@ -114,9 +134,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
         private string CalculateMd5Hash(MemoryStream content)
         {
-            MD5 md5 = MD5.Create();
-            byte[] hashBytes = md5.ComputeHash(content);
-            return Convert.ToHexString(hashBytes).ToLower();
+            return Convert.ToHexString(MD5.Create().ComputeHash(content.ToArray())).ToLower();
         }
 
     }
