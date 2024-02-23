@@ -227,6 +227,5 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
             return age.Value;
         }
-
     }
 }

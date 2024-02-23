@@ -111,6 +111,5 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             return Convert.ToHexString(MD5.Create().ComputeHash(content.ToArray())).ToLower();
         }
-
     }
 }
