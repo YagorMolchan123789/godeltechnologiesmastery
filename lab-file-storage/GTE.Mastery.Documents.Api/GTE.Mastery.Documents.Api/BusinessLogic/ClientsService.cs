@@ -1,4 +1,5 @@
-﻿using GTE.Mastery.Documents.Api.Exceptions;
+﻿using GTE.Mastery.Documents.Api.Entities;
+using GTE.Mastery.Documents.Api.Exceptions;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -36,15 +37,22 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             var clientsJson = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+            var deserializedClients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var query = deserializedClients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+
+            if (tags?.Length > 0)
+            {
+                tags = tags?[0].Split(' ');
+                Validate(tags);
+                query = query?.Where(q => q.Tags.Any(t => tags.Contains(t)));    
+            }
 
             if (skip != null && skip > 0)
             {
                 query = query?.Skip(skip.Value);
             }
 
-            if(take > clients?.Count)
+            if(take > deserializedClients?.Count)
             {
                 throw new DocumentApiValidationException("Take is more than count of the clients");
             }
@@ -55,7 +63,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             return query?.ToList();
-
         }
 
         public async Task<Client> GetClientAsync(int clientId)
@@ -86,7 +93,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             File.WriteAllText(_filePath, serializedClients);
 
             return client;
-
         }
 
         public async Task<Client> UpdateClientAsync(int clientId, Client client)
@@ -204,6 +210,42 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 exceptionMessages.Add("No tag must contain the special numbers");
             }
             if (client.Tags.Any(t => t.Length > 20))
+            {
+                exceptionMessages.Add("The length of all the tags must be not more than 20 symbols");
+            }
+
+            if (exceptionMessages.Any())
+            {
+                string exceptionMessage = string.Join(". ", exceptionMessages);
+                throw new DocumentApiValidationException(exceptionMessage);
+            }
+        }
+
+        private void Validate(string[]? tags)
+        {
+            List<string> exceptionMessages = new List<string>();    
+
+            if (tags?.Length > 10)
+            {
+                throw new DocumentApiValidationException("The number of specified tags in the filter should be not more than 10");
+            }
+            if (tags?.Distinct().Count() != tags?.Count())
+            {
+                exceptionMessages.Add("All the client's tags must be unique");
+            }
+            if (tags.Any(t => !_regexEnglishTags.IsMatch(t)))
+            {
+                exceptionMessages.Add("All the tags must consist of English letters only");
+            }
+            if (tags.Any(t => _regexNumberTags.IsMatch(t)))
+            {
+                exceptionMessages.Add("No tag must contain the digits");
+            }
+            if (tags.Any(t => _regexSpecialCharactersTags.IsMatch(t)))
+            {
+                exceptionMessages.Add("No tag must contain the special numbers");
+            }
+            if (tags.Any(t => t.Length > 20))
             {
                 exceptionMessages.Add("The length of all the tags must be not more than 20 symbols");
             }
