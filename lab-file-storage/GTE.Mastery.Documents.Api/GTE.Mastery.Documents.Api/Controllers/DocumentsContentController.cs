@@ -1,5 +1,6 @@
 ﻿using GTE.Mastery.Documents.Api.Attributes;
 using GTE.Mastery.Documents.Api.Configurations;
+using GTE.Mastery.Documents.Api.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +17,8 @@ namespace GTE.Mastery.Documents.Api.Controllers
         private readonly IDocumentsMetadataService _documentsMetadataService;
         private readonly IFileService _fileService;
 
-        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService)
+        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService,
+            IDocumentsMetadataService documentsMetadataService, IClientsService clientsService)
         {
             if (documentStorageConfig == null)
             {
@@ -24,11 +26,8 @@ namespace GTE.Mastery.Documents.Api.Controllers
             }
 
             _fileService = fileService;
-            _documentsMetadataService = new DocumentsMetadataService(documentStorageConfig.Value.DocumentPath);
-
-            _clientsService = new ClientsService(documentStorageConfig.Value.ClientPath, documentStorageConfig
-                .Value.DocumentBlobPath, _documentsMetadataService, _fileService);
-
+            _documentsMetadataService = documentsMetadataService;
+            _clientsService = clientsService;
             _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath,
                 _documentsMetadataService, _clientsService, _fileService);
         }

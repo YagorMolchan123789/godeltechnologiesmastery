@@ -7,6 +7,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         public void CreateFile(string filePath)
         {
             var directory = filePath.Remove(filePath.LastIndexOf("/"));
+
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);

@@ -15,15 +15,16 @@ namespace GTE.Mastery.Documents.Api.Controllers
         private readonly IDocumentsMetadataService _documentsMetadataService;
         private readonly IFileService _fileService;
 
-        public ClientsController(IOptions<DocumentStorageOptions> documentStorageConfig)
+        public ClientsController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService,
+            IDocumentsMetadataService documentsMetadataService)
         {
             if (documentStorageConfig == null)
             {
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _fileService = new FileService();
-            _documentsMetadataService = new DocumentsMetadataService(documentStorageConfig.Value.DocumentPath);
+            _fileService = fileService;
+            _documentsMetadataService = documentsMetadataService;
             _clientsService = new ClientsService(documentStorageConfig.Value.ClientPath, documentStorageConfig.Value.DocumentBlobPath,
                 _documentsMetadataService, _fileService);
         }

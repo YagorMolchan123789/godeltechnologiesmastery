@@ -26,7 +26,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         private readonly Regex _regexHexademicalNumbers = new Regex("[0-9a-fA-F]+");
         private readonly Regex _regexContentLength = new Regex("^[+]?\\d+([.]\\d+)?$");
 
-
         public DocumentsMetadataService(string filePath)
         {
             _filePath = filePath;
@@ -62,7 +61,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
             if (document == null)
             {
-                throw new DocumentApiEntityNotFoundException("The document with such Id is not found");
+                throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
             }
 
             document.Properties["deleted"] = "true";
@@ -79,7 +78,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
 
             if(document == null)
             {
-                throw new DocumentApiEntityNotFoundException("The document with such Id is not found");
+                throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
             }
 
             return document;
@@ -98,13 +97,13 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             var documentsJson = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
+            var deserializedDocuments = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
+            var query = deserializedDocuments?.AsQueryable().Where(d => d.ClientId == clientId &&
                 !d.Properties.ContainsKey("deleted"));
 
             if (query?.Any() == false)
             {
-                throw new DocumentApiEntityNotFoundException("The client with such Id is not found");
+                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
 
             if (skip != null && skip > 0)
@@ -112,7 +111,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 query = query?.Skip(skip.Value);
             }
 
-            if (take > documents?.Count)
+            if (take > deserializedDocuments?.Count)
             {
                 throw new DocumentApiValidationException("Take is more than count of the documents");
             }
@@ -122,19 +121,17 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 query = query?.Take(take.Value);
             }
 
-            return query?.ToList();
+            var documents = query?.ToList();
+
+            if(documents?.Any() == false)
+            {
+                throw new DocumentApiValidationException($"There are no documents that blong to the client with Id={clientId}");
+            }
+
+            return documents;
 
         }
 
-        public async Task<IEnumerable<DocumentMetadata>> GetDocumentsAsync(int clientId)
-        {
-            var documentsJson = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = documents?.AsQueryable().Where(d => d.ClientId == clientId &&
-                !d.Properties.ContainsKey("deleted"));
-
-            return query?.ToList();
-        }
         public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadata documentMetadata)
         {
             var documentsJson = File.ReadAllText(_filePath);

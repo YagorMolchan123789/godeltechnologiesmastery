@@ -42,6 +42,5 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic.Interfaces
         /// <param name="documentId">The unique identifier of the document to delete.</param>
         Task DeleteDocumentAsync(int clientId, int documentId);
 
-        Task<IEnumerable<DocumentMetadata>> GetDocumentsAsync(int clientId);
     }
 }

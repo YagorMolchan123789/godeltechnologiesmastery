@@ -25,7 +25,22 @@ builder.Services.AddEndpointsApiExplorer();
 // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-8.0
 builder.Services.Configure<DocumentStorageOptions>(builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey));
 
+var clientPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string),"ClientPath");
+var documentPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string), "DocumentPath");
+var documentBlobPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string), "DocumentBlobPath");
+
 builder.Services.AddScoped<IFileService, FileService>();
+
+builder.Services.AddScoped<IDocumentsMetadataService>(d =>
+    new DocumentsMetadataService(documentPath.ToString()));
+
+builder.Services.AddScoped<IClientsService>(c =>
+    new ClientsService(clientPath.ToString(), documentBlobPath.ToString(), c.GetRequiredService<IDocumentsMetadataService>(),
+    c.GetRequiredService<IFileService>()));
+
+builder.Services.AddScoped<IDocumentsContentService>(d =>
+    new DocumentsContentService(documentBlobPath.ToString(),  d.GetRequiredService<IDocumentsMetadataService>(),
+    d.GetRequiredService<IClientsService>(), d.GetRequiredService<IFileService>()));
 
 // Register and configure Swagger generator services
 builder.Services.AddSwaggerGen(c =>
@@ -57,14 +72,11 @@ WebApplication app = builder.Build();
 using var scope = app.Services.CreateScope();
 var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();
 
-fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
-        .Value.ClientPath);
+fileService.CreateFile(clientPath.ToString());
 
-fileService.CreateFile(app.Services.GetService<IOptions<DocumentStorageOptions>>()
-        .Value.DocumentPath);
+fileService.CreateFile(documentPath.ToString());
 
-fileService.CreateDirectory(app.Services.GetService<IOptions<DocumentStorageOptions>>()
-        .Value.DocumentBlobPath);
+fileService.CreateDirectory(documentBlobPath.ToString());
 
 // Configure the HTTP request pipeline.
 if (true || app.Environment.IsDevelopment())
