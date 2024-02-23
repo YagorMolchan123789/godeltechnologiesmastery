@@ -1,5 +1,6 @@
 ﻿using GTE.Mastery.Documents.Api.Attributes;
 using GTE.Mastery.Documents.Api.Configurations;
+using GTE.Mastery.Documents.Api.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -11,16 +12,24 @@ namespace GTE.Mastery.Documents.Api.Controllers
     [DoNotModify]
     public sealed class DocumentsContentController : ControllerBase
     {
+        private readonly IClientsService _clientsService;
         private readonly IDocumentsContentService _documentsContentService;
+        private readonly IDocumentsMetadataService _documentsMetadataService;
+        private readonly IFileService _fileService;
 
-        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig)
+        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService,
+            IDocumentsMetadataService documentsMetadataService, IClientsService clientsService)
         {
             if (documentStorageConfig == null)
             {
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath);
+            _fileService = fileService;
+            _documentsMetadataService = documentsMetadataService;
+            _clientsService = clientsService;
+            _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath,
+                _documentsMetadataService, _clientsService, _fileService);
         }
 
         /// <summary>

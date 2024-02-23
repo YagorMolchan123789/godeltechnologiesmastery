@@ -36,6 +36,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic.Interfaces
         /// Deletes a client record, identified by their unique identifier.
         /// </summary>
         /// <param name="clientId">The unique identifier of the client to delete.</param>
-        Task DeleteClientAsync(int clientId);
+        Task DeleteClientAsync(int clientId);        
     }
 }

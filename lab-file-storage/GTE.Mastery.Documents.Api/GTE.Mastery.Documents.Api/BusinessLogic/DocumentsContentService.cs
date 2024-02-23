@@ -1,47 +1,115 @@
 ﻿using Bogus;
+using GTE.Mastery.Documents.Api.Exceptions;
+using System.Text.Json;
+using System.Security.Cryptography;
+using System.Reflection.Metadata;
+using GTE.Mastery.Documents.Api.Entities;
 
 namespace GTE.Mastery.Documents.Api.BusinessLogic
 {
     public class DocumentsContentService : IDocumentsContentService
     {
         private readonly string _blobPath;
+        private readonly IDocumentsMetadataService _documentsMetadataService;
+        private readonly IClientsService _clientsService;
+        private readonly IFileService _fileService;
 
-        public DocumentsContentService(string blobPath)
+        private readonly int _maxContentLength = 1048576;
+
+        public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService, IClientsService clientsService, IFileService fileService)
         {
             _blobPath = blobPath;
+            _documentsMetadataService = documentsMetadataService;
+            _clientsService = clientsService;
+            _fileService = fileService;
         }
 
         public async Task UploadDocumentAsync(int clientId, int documentId, MemoryStream content)
         {
-            // TODO: Add your implementation here
-            throw new NotImplementedException();
+            var client = await _clientsService.GetClientAsync(clientId);
+            var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
+
+            string targetDirectory = Path.Combine(_blobPath, client.ToString());
+            string sourcePath = Path.Combine(targetDirectory, document.FileName);
+
+            if (_fileService.Exists(sourcePath))
+            {
+                throw new DocumentApiValidationException($"This file {document.FileName} already exists");
+            }
+
+            ValidateUpload(content);
+
+            var contentMd5Hash = CalculateMd5Hash(content);
+
+            document.ContentLength = (int)content.Length;
+            document.ContentMd5 = contentMd5Hash;
+
+            DocumentMetadata metadata = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, document);
+
+            string targetPath = Path.Combine(targetDirectory, metadata.FileName);
+
+            _fileService.CreateDirectory(targetDirectory);
+
+            FileStream uploadStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
+            uploadStream.Write(content.ToArray(), 0, metadata.ContentLength);
+            uploadStream.Close();            
         }
 
         public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)
         {
-            #region TODO: replace this code block by your implementation
+            var client = await _clientsService.GetClientAsync(clientId);
+            var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
 
-            Faker<DocumentMetadata>? faker = new Faker<DocumentMetadata>()
-                // Ensure the ID remains consistent with the input
-                .RuleFor(d => d.Id, _ => documentId)
-                // Ensure the ClientId remains consistent with the input
-                .RuleFor(d => d.ClientId, _ => clientId)
-                .RuleFor(d => d.FileName, _ => "logo.svg")
-                .RuleFor(d => d.Title, f => f.Lorem.Sentence())
-                .RuleFor(d => d.Description, f => f.Lorem.Paragraph())
-                .RuleFor(d => d.ContentLength, f => f.Random.Int(0, 100000))
-                .RuleFor(d => d.ContentType, f => f.System.MimeType())
-                .RuleFor(d => d.ContentMd5, f => Guid.NewGuid().ToString())
-                .RuleFor(d => d.Properties,
-                    f => new Dictionary<string, string>(f.Make(1,
-                        () => new KeyValuePair<string, string>(f.Lorem.Word(), f.Lorem.Word()))));
+            string targetDirectory = Path.Combine(_blobPath, client.ToString());
+            string targetPath = Path.Combine(targetDirectory, document.FileName);
 
-            DocumentMetadata? updatedDocument = faker.Generate();
-            string encodedDocument =
-                "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBmaWxsPSIjOUI0Rjk2IiBkPSJNMTE1LjQgMzAuN0w2Ny4xIDIuOWMtLjgtLjUtMS45LS43LTMuMS0uNy0xLjIgMC0yLjMuMy0zLjEuN2wtNDggMjcuOWMtMS43IDEtMi45IDMuNS0yLjkgNS40djU1LjdjMCAxLjEuMiAyLjQgMSAzLjVsMTA2LjgtNjJjLS42LTEuMi0xLjUtMi4xLTIuNC0yLjd6Ii8+PHBhdGggZmlsbD0iIzY4MjE3QSIgZD0iTTEwLjcgOTUuM2MuNS44IDEuMiAxLjUgMS45IDEuOWw0OC4yIDI3LjljLjguNSAxLjkuNyAzLjEuNyAxLjIgMCAyLjMtLjMgMy4xLS43bDQ4LTI3LjljMS43LTEgMi45LTMuNSAyLjktNS40VjM2LjFjMC0uOS0uMS0xLjktLjYtMi44bC0xMDYuNiA2MnoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNODUuMyA3Ni4xQzgxLjEgODMuNSA3My4xIDg4LjUgNjQgODguNWMtMTMuNSAwLTI0LjUtMTEtMjQuNS0yNC41czExLTI0LjUgMjQuNS0yNC41YzkuMSAwIDE3LjEgNSAyMS4zIDEyLjVsMTMtNy41Yy02LjgtMTEuOS0xOS42LTIwLTM0LjMtMjAtMjEuOCAwLTM5LjUgMTcuNy0zOS41IDM5LjVzMTcuNyAzOS41IDM5LjUgMzkuNWMxNC42IDAgMjcuNC04IDM0LjItMTkuOGwtMTIuOS03LjZ6TTk3IDY2LjJsLjktNC4zaC00LjJ2LTQuN2g1LjFMMTAwIDUxaDQuOWwtMS4yIDYuMWgzLjhsMS4yLTYuMWg0LjhsLTEuMiA2LjFoMi40djQuN2gtMy4zbC0uOSA0LjNoNC4ydjQuN2gtNS4xbC0xLjIgNmgtNC45bDEuMi02aC0zLjhsLTEuMiA2aC00LjhsMS4yLTZoLTIuNHYtNC43SDk3em00LjggMGgzLjhsLjktNC4zaC0zLjhsLS45IDQuM3oiLz48L3N2Zz4=";
-            return new ReceiveDocumentResponse(new MemoryStream(Convert.FromBase64String(encodedDocument)), updatedDocument);
+            if (!_fileService.Exists(targetPath))
+            {
+                throw new DocumentApiEntityNotFoundException($"The file {document.FileName} does not exist");
+            }
 
-            #endregion TODO: replace this code block by your implementation
+            MemoryStream content = new MemoryStream();
+            byte[] buffer = new byte[document.ContentLength];
+
+            FileStream metadataStream = new FileStream(targetPath, FileMode.Open, FileAccess.Read);
+
+            metadataStream.Read(buffer, 0, buffer.Length);
+
+            content.Write(buffer, 0, buffer.Length);
+
+            ValidateDownload(content, document);
+            FileStream downloadStream = new FileStream(Path.Combine(_blobPath, document.FileName), FileMode.Create, FileAccess.Write);
+            content.Position = 0;
+            downloadStream.Write(content.ToArray(), 0, document.ContentLength);
+
+            metadataStream.Close();
+            downloadStream.Close();
+
+            ReceiveDocumentResponse receiveDocumentResponse = new(content, document);
+            return receiveDocumentResponse;
+        }
+
+        private void ValidateUpload(MemoryStream content)
+        {
+            if (content.ToArray().Length > _maxContentLength)
+            {
+                throw new DocumentApiValidationException($"The storage does not support files larger than {_maxContentLength * Math.Pow(10, -6)} M in size");
+            }
+        }
+
+        private void ValidateDownload(MemoryStream content, DocumentMetadata metadata)
+        {
+            var md5Hash = CalculateMd5Hash(content);
+
+            if (md5Hash != metadata.ContentMd5)
+            {
+                throw new DocumentApiValidationException("Md5 hash of the file does not match the md5 hash in metadata");
+            }
+        }
+
+        private string CalculateMd5Hash(MemoryStream content)
+        {
+            return Convert.ToHexString(MD5.Create().ComputeHash(content.ToArray())).ToLower();
         }
     }
 }
