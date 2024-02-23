@@ -31,14 +31,14 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 throw new DocumentApiValidationException("Skip must be more than 0");
             }
-            if(take < 0)
+            if (take < 0)
             {
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
             var clientsJson = File.ReadAllText(_filePath);
-            var deserializedClients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var query = deserializedClients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
 
             if (tags?.Length > 0)
             {
@@ -52,12 +52,12 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 query = query?.Skip(skip.Value);
             }
 
-            if(take > deserializedClients?.Count)
+            if (take > clients?.Count)
             {
                 throw new DocumentApiValidationException("Take is more than count of the clients");
             }
 
-            if(take != null && take > 0)
+            if (take != null && take > 0)
             {
                 query = query?.Take(take.Value);
             }
