@@ -25,7 +25,7 @@ namespace GTE.Mastery.Documents.Api.Entities
 
         public override string ToString()
         {
-            return Id.ToString() + "_" + FirstName + "_" + LastName;
+            return Id.ToString();
         }
     }
 }
