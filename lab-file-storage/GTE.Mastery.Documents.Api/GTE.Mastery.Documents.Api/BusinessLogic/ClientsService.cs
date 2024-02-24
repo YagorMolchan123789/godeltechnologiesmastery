@@ -1,4 +1,5 @@
-﻿using GTE.Mastery.Documents.Api.Exceptions;
+﻿using GTE.Mastery.Documents.Api.Entities;
+using GTE.Mastery.Documents.Api.Exceptions;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -30,32 +31,44 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             {
                 throw new DocumentApiValidationException("Skip must be more than 0");
             }
-            if(take < 0)
+            if (take < 0)
             {
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+
+            if (!clients.Any())
+            {
+                throw new DocumentApiEntityNotFoundException("There are no clients");
+            }
+
             var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
+
+            if (tags.Any())
+            {
+                var distinctedTags = tags.Distinct();
+                Validate(tags);
+                query = query?.Where(q => q.Tags.Any(t => distinctedTags.Contains(t)));
+            }
 
             if (skip != null && skip > 0)
             {
                 query = query?.Skip(skip.Value);
             }
 
-            if(take > clients?.Count)
+            if (take > clients?.Count)
             {
                 throw new DocumentApiValidationException("Take is more than count of the clients");
             }
 
-            if(take != null && take > 0)
+            if (take != null && take > 0)
             {
                 query = query?.Take(take.Value);
             }
 
             return query?.ToList();
-
         }
 
         public async Task<Client> GetClientAsync(int clientId)
@@ -86,7 +99,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             File.WriteAllText(_filePath, serializedClients);
 
             return client;
-
         }
 
         public async Task<Client> UpdateClientAsync(int clientId, Client client)
@@ -101,12 +113,6 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             }
 
             Validate(client);
-
-            client.Id = clientId;
-
-            string sourcePath = Path.Combine(_blobPath, clientNew.ToString());
-            string targetPath = Path.Combine(_blobPath, client.ToString());
-            _fileService.RenameDirectory(sourcePath, targetPath);
 
             clientNew.FirstName = client.FirstName;
             clientNew.LastName = client.LastName;
@@ -140,7 +146,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 }
             }
 
-            string targetPath = Path.Combine(_blobPath, client.ToString());
+            string targetPath = Path.Combine(_blobPath, client.Id.ToString());
             _fileService.DeleteDirectory(targetPath);
 
             client.Tags = client.Tags.Concat(new string[] { "deleted" }).ToArray();
@@ -152,7 +158,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
         {
             List<string> exceptionMessages = new List<string>();                      
 
-            if (String.IsNullOrEmpty(client.FirstName))
+            if (String.IsNullOrEmpty(client?.FirstName))
             {
                 exceptionMessages.Add("Please, fill the FirstName out");
             }
@@ -183,32 +189,54 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 exceptionMessages.Add("The client cannot have the Birth Date from the future");
             }
 
-            if (client.Tags.Length > 10)
+            if (client.Tags.Any())
             {
-                exceptionMessages.Add("The count of tags must be not more than 10");
-            }
-            if (client.Tags.Distinct().Count() != client.Tags.Count())
-            {
-                exceptionMessages.Add("All the client's tags must be unique");
-            }
-            if (client.Tags.Any(t => !_regexEnglishTags.IsMatch(t)))
-            {
-                exceptionMessages.Add("All the tags must consist of English letters only");
-            }
-            if(client.Tags.Any(t => _regexNumberTags.IsMatch(t)))
-            {
-                exceptionMessages.Add("No tag must contain the digits");
-            }
-            if(client.Tags.Any(t => _regexSpecialCharactersTags.IsMatch(t)))
-            {
-                exceptionMessages.Add("No tag must contain the special numbers");
-            }
-            if (client.Tags.Any(t => t.Length > 20))
-            {
-                exceptionMessages.Add("The length of all the tags must be not more than 20 symbols");
+                Validate(client.Tags, exceptionMessages);
             }
 
             if (exceptionMessages.Any())
+            {
+                string exceptionMessage = string.Join(". ", exceptionMessages);
+                throw new DocumentApiValidationException(exceptionMessage);
+            }
+        }
+
+        private void Validate(string[]? tags, List<string>? exceptionMessages=null)
+        {
+            bool isTagsValidation = false;
+
+            if (exceptionMessages is null)
+            {
+                exceptionMessages = new List<string>();
+                isTagsValidation = true;
+            }            
+
+            if (tags?.Length > 10)
+            {
+                exceptionMessages?.Add("The count of the tags be not more than 10");
+            }
+            if (tags?.Distinct().Count() != tags?.Count())
+            {
+                exceptionMessages?.Add("All the client's tags must be unique");
+            }
+            if (tags.Any(t => !_regexEnglishTags.IsMatch(t)))
+            {
+                exceptionMessages?.Add("All the tags must consist of English letters only");
+            }
+            if (tags.Any(t => _regexNumberTags.IsMatch(t)))
+            {
+                exceptionMessages?.Add("No tag must contain the digits");
+            }
+            if (tags.Any(t => _regexSpecialCharactersTags.IsMatch(t)))
+            {
+                exceptionMessages?.Add("No tag must contain the special numbers");
+            }
+            if (tags.Any(t => t.Length > 20))
+            {
+                exceptionMessages?.Add("The length of all the tags must be not more than 20 symbols");
+            }
+
+            if (exceptionMessages.Any() && isTagsValidation)
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 throw new DocumentApiValidationException(exceptionMessage);

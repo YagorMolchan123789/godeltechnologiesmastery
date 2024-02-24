@@ -29,7 +29,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             var client = await _clientsService.GetClientAsync(clientId);
             var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
 
-            string targetDirectory = Path.Combine(_blobPath, client.ToString());
+            string targetDirectory = Path.Combine(_blobPath, client.Id.ToString());
             string sourcePath = Path.Combine(targetDirectory, document.FileName);
 
             if (_fileService.Exists(sourcePath))
@@ -60,7 +60,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             var client = await _clientsService.GetClientAsync(clientId);
             var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
 
-            string targetDirectory = Path.Combine(_blobPath, client.ToString());
+            string targetDirectory = Path.Combine(_blobPath, client.Id.ToString());
             string targetPath = Path.Combine(targetDirectory, document.FileName);
 
             if (!_fileService.Exists(targetPath))
