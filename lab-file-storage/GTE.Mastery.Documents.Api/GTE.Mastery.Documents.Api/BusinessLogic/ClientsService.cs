@@ -154,7 +154,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
             File.WriteAllText(_filePath, serializedClients);
         }
 
-        private void Validate(Client? client)
+        private void Validate(Client client)
         {
             List<string> exceptionMessages = new List<string>();                      
 
