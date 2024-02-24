@@ -22,10 +22,6 @@ namespace GTE.Mastery.Documents.Api.Entities
 
         [SwaggerSchema(Title = "Client tags", Description = "The tags of the client.")]
         public string[] Tags { get; set; } = Array.Empty<string>();
-
-        public override string ToString()
-        {
-            return Id.ToString();
-        }
+        
     }
 }

@@ -146,7 +146,7 @@ namespace GTE.Mastery.Documents.Api.BusinessLogic
                 }
             }
 
-            string targetPath = Path.Combine(_blobPath, client.ToString());
+            string targetPath = Path.Combine(_blobPath, client.Id.ToString());
             _fileService.DeleteDirectory(targetPath);
 
             client.Tags = client.Tags.Concat(new string[] { "deleted" }).ToArray();
