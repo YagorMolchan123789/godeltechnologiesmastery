@@ -2,6 +2,8 @@ using Mastery.KeeFi.Api.ExceptionHandling;
 using Mastery.KeeFi.BusinessLogic;
 using Mastery.KeeFi.BusinessLogic.Interfaces;
 using Mastery.KeeFi.Common.Configurations;
+using Mastery.KeeFi.Data;
+using Mastery.KeeFi.Data.Interfaces;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +23,7 @@ var clientPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigK
 var documentPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string), "DocumentPath");
 var documentBlobPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string), "DocumentBlobPath");
 
-builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IFileService, FIleService>();
 
 builder.Services.AddScoped<IDocumentsMetadataService>(d =>
     new DocumentsMetadataService(documentPath.ToString()));

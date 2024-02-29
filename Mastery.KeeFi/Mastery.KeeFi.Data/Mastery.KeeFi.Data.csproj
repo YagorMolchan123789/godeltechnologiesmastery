@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mastery.KeeFi.Common\Mastery.KeeFi.Common.csproj" />
-    <ProjectReference Include="..\Mastery.KeeFi.Data\Mastery.KeeFi.Data.csproj" />
+    <ProjectReference Include="..\Mastery.KeeFi.Domain\Mastery.KeeFi.Domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.BusinessLogic.Interfaces
+namespace Mastery.KeeFi.Data.Interfaces
 {
-    public  interface IFileService
+    public interface IFileService
     {
         void CreateFile(string filePath);
 

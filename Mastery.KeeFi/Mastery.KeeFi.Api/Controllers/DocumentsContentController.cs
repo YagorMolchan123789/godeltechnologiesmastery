@@ -4,6 +4,7 @@ using Mastery.KeeFi.Common.Configurations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Mastery.KeeFi.Data.Interfaces;
 
 namespace Mastery.KeeFi.Api.Controllers
 {

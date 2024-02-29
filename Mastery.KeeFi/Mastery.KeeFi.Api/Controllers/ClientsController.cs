@@ -1,6 +1,7 @@
 ﻿using Mastery.KeeFi.BusinessLogic;
 using Mastery.KeeFi.BusinessLogic.Interfaces;
 using Mastery.KeeFi.Common.Configurations;
+using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

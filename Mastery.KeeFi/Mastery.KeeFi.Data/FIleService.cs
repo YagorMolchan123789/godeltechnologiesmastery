@@ -1,9 +1,14 @@
-﻿using Mastery.KeeFi.BusinessLogic.Interfaces;
+﻿using Mastery.KeeFi.Data.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.BusinessLogic
+namespace Mastery.KeeFi.Data
 {
-    public class FileService : IFileService
+    public class FIleService : IFileService
     {
         public void CreateFile(string filePath)
         {

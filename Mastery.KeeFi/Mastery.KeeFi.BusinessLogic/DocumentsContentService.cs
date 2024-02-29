@@ -1,5 +1,6 @@
 ﻿using Mastery.KeeFi.BusinessLogic.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
