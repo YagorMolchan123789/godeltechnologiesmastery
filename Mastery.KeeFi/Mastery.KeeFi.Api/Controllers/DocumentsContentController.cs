@@ -1,10 +1,9 @@
-﻿using Mastery.KeeFi.BusinessLogic.Interfaces;
-using Mastery.KeeFi.BusinessLogic;
-using Mastery.KeeFi.Common.Configurations;
+﻿using Mastery.KeeFi.Api.Configurations;
+using Mastery.KeeFi.Business.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Mastery.KeeFi.Data.Interfaces;
+using Mastery.KeeFi.Business.Services;
 
 namespace Mastery.KeeFi.Api.Controllers
 {
@@ -13,24 +12,17 @@ namespace Mastery.KeeFi.Api.Controllers
     [Tags("Document")]
     public class DocumentsContentController : ControllerBase
     {
-        private readonly IClientsService _clientsService;
         private readonly IDocumentsContentService _documentsContentService;
-        private readonly IDocumentsMetadataService _documentsMetadataService;
-        private readonly IFileService _fileService;
 
-        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService,
-            IDocumentsMetadataService documentsMetadataService, IClientsService clientsService)
+        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, 
+            IDocumentsContentService documentsContentService)
         {
             if (documentStorageConfig == null)
             {
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _fileService = fileService;
-            _documentsMetadataService = documentsMetadataService;
-            _clientsService = clientsService;
-            _documentsContentService = new DocumentsContentService(documentStorageConfig.Value.DocumentBlobPath,
-                _documentsMetadataService, _clientsService, _fileService);
+            _documentsContentService = documentsContentService;
         }
 
         [HttpPost("")]

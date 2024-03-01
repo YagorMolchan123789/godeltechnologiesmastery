@@ -1,11 +1,11 @@
-﻿using Mastery.KeeFi.BusinessLogic;
-using Mastery.KeeFi.BusinessLogic.Interfaces;
-using Mastery.KeeFi.Common.Configurations;
-using Mastery.KeeFi.Data.Interfaces;
-using Mastery.KeeFi.Domain.Entities;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Mastery.KeeFi.Business.Interfaces;
+using Mastery.KeeFi.Api.Configurations;
+using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Domain.Entities;
 
 namespace Mastery.KeeFi.Api.Controllers
 {
@@ -15,44 +15,38 @@ namespace Mastery.KeeFi.Api.Controllers
     public sealed class ClientsController : ControllerBase
     {
         private readonly IClientsService _clientsService;
-        private readonly IDocumentsMetadataService _documentsMetadataService;
-        private readonly IFileService _fileService;
 
-        public ClientsController(IOptions<DocumentStorageOptions> documentStorageConfig, IFileService fileService,
-            IDocumentsMetadataService documentsMetadataService)
+        public ClientsController(IOptions<DocumentStorageOptions> documentStorageConfig, IClientsService clientsService)
         {
-            if (documentStorageConfig == null)
+            if(documentStorageConfig == null)
             {
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _fileService = fileService;
-            _documentsMetadataService = documentsMetadataService;
-            _clientsService = new ClientsService(documentStorageConfig.Value.ClientPath, documentStorageConfig.Value.DocumentBlobPath,
-                _documentsMetadataService, _fileService);
+            _clientsService = clientsService;
         }
 
         [HttpGet("", Name = "ListClients")]
-        [ProducesResponseType(typeof(IEnumerable<Client>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ClientDTO>), 200)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<IEnumerable<Client>>> List(
+        public async Task<ActionResult<IEnumerable<ClientDTO>>> List(
             [FromQuery] int? skip,
             [FromQuery] int? take,
             [FromQuery] string[]? tags)
         {
-            IEnumerable<Client> result = await _clientsService.ListClientsAsync(skip, take, tags);
+            IEnumerable<ClientDTO> result = await _clientsService.ListClientsAsync(skip, take, tags);
             return Ok(result);
         }
 
         [HttpGet("{clientId}", Name = "GetClient")]
-        [ProducesResponseType(typeof(Client), 200)]
+        [ProducesResponseType(typeof(ClientDTO), 200)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<Client>> Get([FromRoute] int clientId)
+        public async Task<ActionResult<ClientDTO>> Get([FromRoute] int clientId)
         {
-            Client result = await _clientsService.GetClientAsync(clientId);
+            ClientDTO result = await _clientsService.GetClientAsync(clientId);
             return Ok(result);
         }
 
@@ -60,9 +54,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(Client), 201)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<Client>> Post([FromBody] Client client)
+        public async Task<ActionResult<Client>> Post([FromBody] ClientDTO clientDTO)
         {
-            Client result = await _clientsService.CreateClientAsync(client);
+            Client result = await _clientsService.CreateClientAsync(clientDTO);
             return Created($"/clients/{result.Id}", result);
         }
 
@@ -71,9 +65,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<Client>> Put([FromRoute] int clientId, [FromBody] Client client)
+        public async Task<ActionResult<Client>> Put([FromRoute] int clientId, [FromBody] ClientDTO clientDTO)
         {
-            Client result = await _clientsService.UpdateClientAsync(clientId, client);
+            Client result = await _clientsService.UpdateClientAsync(clientId, clientDTO);
             return Ok(result);
         }
 

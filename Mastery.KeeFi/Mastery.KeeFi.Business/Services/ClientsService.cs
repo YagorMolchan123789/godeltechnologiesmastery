@@ -1,6 +1,7 @@
-﻿using Mastery.KeeFi.BusinessLogic.Interfaces;
+﻿using AutoMapper;
+using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
-using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.BusinessLogic
+namespace Mastery.KeeFi.Business.Services
 {
     public class ClientsService : IClientsService
     {
@@ -18,26 +19,30 @@ namespace Mastery.KeeFi.BusinessLogic
         private readonly string _blobPath;
         private readonly IDocumentsMetadataService _documentsMetadataService;
         private readonly IFileService _fileService;
+        private readonly IMapper _mapper;
 
         private readonly Regex _regexEnglishTags = new Regex("[a-zA-Z]");
         private readonly Regex _regexNumberTags = new Regex("[0-9]");
         private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
 
         public ClientsService(string filePath, string blobPath, IDocumentsMetadataService documentsMetadataService,
-            IFileService fileService)
+            IFileService fileService, IMapper mapper)
         {
             _filePath = filePath;
             _blobPath = blobPath;
             _documentsMetadataService = documentsMetadataService;
             _fileService = fileService;
+            _mapper = mapper;
         }
 
-        public async Task<Client> CreateClientAsync(Client client)
+        public async Task<Client> CreateClientAsync(ClientDTO clientDTO)
         {
-            Validate(client);
+            Validate(clientDTO);
 
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+
+            var client = _mapper.Map<Client>(clientDTO);
 
             client.Id = (clients?.Count == 0) ? 1 : clients.Max(c => c.Id) + 1;
             clients?.Add(client);
@@ -77,7 +82,7 @@ namespace Mastery.KeeFi.BusinessLogic
             File.WriteAllText(_filePath, serializedClients);
         }
 
-        public async Task<Client> GetClientAsync(int clientId)
+        public async Task<ClientDTO> GetClientAsync(int clientId)
         {
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
@@ -88,10 +93,12 @@ namespace Mastery.KeeFi.BusinessLogic
                 throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
 
-            return client;
+            var clientDTO = _mapper.Map<ClientDTO>(client);
+
+            return clientDTO;
         }
 
-        public async Task<IEnumerable<Client>> ListClientsAsync(int? skip, int? take, string[]? tags)
+        public async Task<IEnumerable<ClientDTO>> ListClientsAsync(int? skip, int? take, string[]? tags)
         {
             if (skip < 0)
             {
@@ -134,10 +141,12 @@ namespace Mastery.KeeFi.BusinessLogic
                 query = query?.Take(take.Value);
             }
 
-            return query?.ToList();
+            var clientDTOs = _mapper.Map<List<ClientDTO>>(query);
+
+            return clientDTOs;
         }
 
-        public async Task<Client> UpdateClientAsync(int clientId, Client client)
+        public async Task<Client> UpdateClientAsync(int clientId, ClientDTO clientDTO)
         {
             var clientsJson = File.ReadAllText(_filePath);
             var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
@@ -148,12 +157,12 @@ namespace Mastery.KeeFi.BusinessLogic
                 throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
 
-            Validate(client);
+            Validate(clientDTO);
 
-            clientNew.FirstName = client.FirstName;
-            clientNew.LastName = client.LastName;
-            clientNew.DateOfBirth = client.DateOfBirth;
-            clientNew.Tags = client.Tags;
+            clientNew.FirstName = clientDTO.FirstName;
+            clientNew.LastName = clientDTO.LastName;
+            clientNew.DateOfBirth = clientDTO.DateOfBirth;
+            clientNew.Tags = clientDTO.Tags;
 
             var serializedClients = JsonSerializer.Serialize(clients);
             File.WriteAllText(_filePath, serializedClients);
@@ -161,44 +170,44 @@ namespace Mastery.KeeFi.BusinessLogic
             return clientNew;
         }
 
-        private void Validate(Client client)
+        private void Validate(ClientDTO clientDTO)
         {
             List<string> exceptionMessages = new List<string>();
 
-            if (String.IsNullOrEmpty(client?.FirstName))
+            if (String.IsNullOrEmpty(clientDTO?.FirstName))
             {
                 exceptionMessages.Add("Please, fill the FirstName out");
             }
-            if (client?.FirstName?.Length > 50)
+            if (clientDTO?.FirstName?.Length > 50)
             {
                 exceptionMessages.Add("The length of FirstName must be not more than 50 symbols");
             }
 
-            if (String.IsNullOrEmpty(client?.LastName))
+            if (String.IsNullOrEmpty(clientDTO?.LastName))
             {
                 exceptionMessages.Add("Please, fill the LastName out");
             }
-            if (client?.LastName?.Length > 50)
+            if (clientDTO?.LastName?.Length > 50)
             {
                 exceptionMessages.Add("The length of LastName must be not more than 50 symbols");
             }
 
-            if (!client.DateOfBirth.HasValue)
+            if (!clientDTO.DateOfBirth.HasValue)
             {
                 throw new DocumentApiValidationException("Please, fill the DateOfBirth out");
             }
-            if (GetAge(client) > 130)
+            if (GetAge(clientDTO) > 130)
             {
                 exceptionMessages.Add("The client should not be older than 130 years");
             }
-            if ((client.DateOfBirth?.DayNumber - DateOnly.FromDateTime(DateTime.Now).DayNumber) > 0)
+            if ((clientDTO.DateOfBirth?.DayNumber - DateOnly.FromDateTime(DateTime.Now).DayNumber) > 0)
             {
                 exceptionMessages.Add("The client cannot have the Birth Date from the future");
             }
 
-            if (client.Tags.Any())
+            if (clientDTO.Tags.Any())
             {
-                Validate(client.Tags, exceptionMessages);
+                Validate(clientDTO.Tags, exceptionMessages);
             }
 
             if (exceptionMessages.Any())
@@ -250,12 +259,12 @@ namespace Mastery.KeeFi.BusinessLogic
             }
         }
 
-        private int GetAge(Client client)
+        private int GetAge(ClientDTO clientDTO)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
-            var age = today.Year - client.DateOfBirth?.Year;
+            var age = today.Year - clientDTO.DateOfBirth?.Year;
 
-            if (client.DateOfBirth > today.AddYears(-age.Value))
+            if (clientDTO.DateOfBirth > today.AddYears(-age.Value))
             {
                 age--;
             }

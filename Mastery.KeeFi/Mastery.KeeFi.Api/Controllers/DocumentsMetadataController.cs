@@ -1,6 +1,7 @@
-﻿using Mastery.KeeFi.BusinessLogic;
-using Mastery.KeeFi.BusinessLogic.Interfaces;
-using Mastery.KeeFi.Common.Configurations;
+﻿using AutoMapper;
+using Mastery.KeeFi.Api.Configurations;
+using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,26 +16,27 @@ namespace Mastery.KeeFi.Api.Controllers
     {
         private readonly IDocumentsMetadataService _documentsMetadataService;
 
-        public DocumentsMetadataController(IOptions<DocumentStorageOptions> documentStorageConfig)
+        public DocumentsMetadataController(IOptions<DocumentStorageOptions> documentStorageConfig, 
+            IDocumentsMetadataService documentsMetadataService)
         {
-            if (documentStorageConfig == null)
+            if(documentStorageConfig == null)
             {
                 throw new ArgumentNullException(nameof(documentStorageConfig));
             }
 
-            _documentsMetadataService = new DocumentsMetadataService(documentStorageConfig.Value.DocumentPath);
+            _documentsMetadataService = documentsMetadataService;
         }
-
+        
         [HttpGet("", Name = "ListDocuments")]
         [ProducesResponseType(typeof(DocumentMetadata), 200)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<IEnumerable<DocumentMetadata>>> List(
+        public async Task<ActionResult<IEnumerable<DocumentMetadataDTO>>> List(
             [FromRoute] int clientId,
             [FromQuery] int? skip,
             [FromQuery] int? take)
         {
-            IEnumerable<DocumentMetadata> result = await _documentsMetadataService.ListDocumentsAsync(clientId, skip, take);
+            IEnumerable<DocumentMetadataDTO> result = await _documentsMetadataService.ListDocumentsAsync(clientId, skip, take);
             return Ok(result);
         }
 
@@ -45,9 +47,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<DocumentMetadata>> Post(
             [FromRoute] int clientId,
-            [FromBody] DocumentMetadata document)
+            [FromBody] DocumentMetadataDTO documentDTO)
         {
-            DocumentMetadata result = await _documentsMetadataService.CreateDocumentAsync(clientId, document);
+            DocumentMetadata result = await _documentsMetadataService.CreateDocumentAsync(clientId, documentDTO);
             return Created($"/clients/{clientId}/documents/{result.Id}", result);
         }
 
@@ -56,9 +58,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<DocumentMetadata>> Get([FromRoute] int clientId, [FromRoute] int documentId)
+        public async Task<ActionResult<DocumentMetadataDTO>> Get([FromRoute] int clientId, [FromRoute] int documentId)
         {
-            DocumentMetadata result = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
+            DocumentMetadataDTO result = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
             return Ok(result);
         }
 
@@ -70,9 +72,9 @@ namespace Mastery.KeeFi.Api.Controllers
         public async Task<ActionResult<DocumentMetadata>> Put(
             [FromRoute] int clientId,
             [FromRoute] int documentId,
-            [FromBody] DocumentMetadata document)
+            [FromBody] DocumentMetadataDTO documentDTO)
         {
-            DocumentMetadata result = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, document);
+            DocumentMetadata result = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, documentDTO);
             return Ok(result);
         }
 

@@ -1,4 +1,6 @@
-﻿using Mastery.KeeFi.BusinessLogic.Interfaces;
+﻿using AutoMapper;
+using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
 using Mastery.KeeFi.Domain.Entities;
 using System;
@@ -9,7 +11,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.BusinessLogic
+namespace Mastery.KeeFi.Business.Services
 {
     public class DocumentsMetadataService : IDocumentsMetadataService
     {
@@ -30,17 +32,22 @@ namespace Mastery.KeeFi.BusinessLogic
         private readonly Regex _regexHexademicalNumbers = new Regex("[0-9a-fA-F]+");
         private readonly Regex _regexContentLength = new Regex("^[+]?\\d+([.]\\d+)?$");
 
-        public DocumentsMetadataService(string filePath)
+        private readonly IMapper _mapper;
+
+        public DocumentsMetadataService(string filePath, IMapper mapper)
         {
             _filePath = filePath;
+            _mapper = mapper;
         }
 
-        public async Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadata documentMetadata)
+        public async Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadataDTO documentMetadataDTO)
         {
-            Validate(documentMetadata);
+            Validate(documentMetadataDTO);
 
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
+
+            var documentMetadata = _mapper.Map<DocumentMetadata>(documentMetadataDTO);
 
             documentMetadata.Id = (documents?.Count == 0) ? 1 : documents.Max(d => d.Id) + 1;
             documentMetadata.ClientId = clientId;
@@ -72,7 +79,7 @@ namespace Mastery.KeeFi.BusinessLogic
             File.WriteAllText(_filePath, serializedDocuments);
         }
 
-        public async Task<DocumentMetadata> GetDocumentAsync(int clientId, int documentId)
+        public async Task<DocumentMetadataDTO> GetDocumentAsync(int clientId, int documentId)
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
@@ -84,10 +91,12 @@ namespace Mastery.KeeFi.BusinessLogic
                 throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
             }
 
-            return document;
+            var documentDTO = _mapper.Map<DocumentMetadataDTO>(document);   
+
+            return documentDTO;
         }
 
-        public async Task<IEnumerable<DocumentMetadata>> ListDocumentsAsync(int clientId, int? skip, int? take)
+        public async Task<IEnumerable<DocumentMetadataDTO>> ListDocumentsAsync(int clientId, int? skip, int? take)
         {
             if (skip < 0)
             {
@@ -130,10 +139,12 @@ namespace Mastery.KeeFi.BusinessLogic
                 throw new DocumentApiValidationException($"There are no documents that blong to the client with Id={clientId}");
             }
 
-            return documents;
+            var documentDTOs = _mapper.Map<List<DocumentMetadataDTO>>(documents);
+
+            return documentDTOs;
         }
 
-        public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadata documentMetadata)
+        public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDTO documentMetadataDTO)
         {
             var documentsJson = File.ReadAllText(_filePath);
             var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
@@ -145,15 +156,15 @@ namespace Mastery.KeeFi.BusinessLogic
                 throw new DocumentApiEntityNotFoundException($"Document not found id = {documentId}  clientId={clientId}");
             }
 
-            Validate(documentMetadata);
+            Validate(documentMetadataDTO);
 
-            document.FileName = documentMetadata.FileName;
-            document.Title = documentMetadata.Title;
-            document.Description = documentMetadata.Description;
-            document.Properties = documentMetadata.Properties;
-            document.ContentLength = documentMetadata.ContentLength;
-            document.ContentType = documentMetadata.ContentType;
-            document.ContentMd5 = documentMetadata.ContentMd5;
+            document.FileName = documentMetadataDTO.FileName;
+            document.Title = documentMetadataDTO.Title;
+            document.Description = documentMetadataDTO.Description;
+            document.Properties = documentMetadataDTO.Properties;
+            document.ContentLength = documentMetadataDTO.ContentLength;
+            document.ContentType = documentMetadataDTO.ContentType;
+            document.ContentMd5 = documentMetadataDTO.ContentMd5;
 
             var serializedDocuments = JsonSerializer.Serialize(documents);
             File.WriteAllText(_filePath, serializedDocuments);
@@ -161,89 +172,89 @@ namespace Mastery.KeeFi.BusinessLogic
             return document;
         }
 
-        private void Validate(DocumentMetadata documentMetadata)
+        private void Validate(DocumentMetadataDTO documentMetadataDTO)
         {
             List<string> exceptionMessages = new List<string>();
 
-            if (string.IsNullOrEmpty(documentMetadata.FileName))
+            if (string.IsNullOrEmpty(documentMetadataDTO.FileName))
             {
                 exceptionMessages.Add("Please, fill the FileName out");
             }
-            if (documentMetadata.FileName.Length > 255)
+            if (documentMetadataDTO.FileName.Length > 255)
             {
                 exceptionMessages.Add("The length of the FileName must be not more than 255 symbols");
             }
-            if (!_regexFileName.IsMatch(documentMetadata.FileName))
+            if (!_regexFileName.IsMatch(documentMetadataDTO.FileName))
             {
                 exceptionMessages.Add("The FileName must consist of English alphanumeric letters and digits, ., -, _");
             }
 
-            if (string.IsNullOrEmpty(documentMetadata.Title))
+            if (string.IsNullOrEmpty(documentMetadataDTO.Title))
             {
                 exceptionMessages.Add("Plese, fill the Title out");
             }
-            if (documentMetadata?.Title?.Length > 150)
+            if (documentMetadataDTO?.Title?.Length > 150)
             {
                 exceptionMessages.Add("The length of the Title must be more than 150 symbols");
             }
 
-            if (documentMetadata?.Description?.Length > 400)
+            if (documentMetadataDTO?.Description?.Length > 400)
             {
                 exceptionMessages.Add("The length of the Description must be mot more than 400 symbols");
             }
 
-            if (documentMetadata?.ContentLength == 0)
+            if (documentMetadataDTO?.ContentLength == 0)
             {
                 exceptionMessages.Add("The ContentLength must be more than 0");
             }
-            if (!_regexContentLength.IsMatch(documentMetadata.ContentLength.ToString()))
+            if (!_regexContentLength.IsMatch(documentMetadataDTO.ContentLength.ToString()))
             {
                 exceptionMessages.Add("The ContentLength must contain only of the numbers");
             }
 
-            if (documentMetadata?.Properties.Keys.Count > 10)
+            if (documentMetadataDTO?.Properties.Keys.Count > 10)
             {
                 exceptionMessages.Add("The count of keys must be more than 0");
             }
-            if (documentMetadata?.Properties.Keys.Distinct().Count() != documentMetadata?.Properties.Count)
+            if (documentMetadataDTO?.Properties.Keys.Distinct().Count() != documentMetadataDTO?.Properties.Count)
             {
                 exceptionMessages.Add("All the keys must be unique");
             }
-            if ((bool)(documentMetadata?.Properties.Keys.Any(k => k.Length > 20)))
+            if ((bool)(documentMetadataDTO?.Properties.Keys.Any(k => k.Length > 20)))
             {
                 exceptionMessages.Add("The length of the key of the Properties must be not more than 20 symbols");
             }
-            if (documentMetadata.Properties.Keys.Any(k => !_regexProperties.IsMatch(k)))
+            if (documentMetadataDTO.Properties.Keys.Any(k => !_regexProperties.IsMatch(k)))
             {
                 exceptionMessages.Add("All the keys of the Properites must consist of English letters only");
             }
 
-            if (string.IsNullOrEmpty(documentMetadata.ContentType))
+            if (string.IsNullOrEmpty(documentMetadataDTO.ContentType))
             {
                 exceptionMessages.Add("Please, fill the ContentType out");
             }
-            if (documentMetadata.ContentType.Length > 100)
+            if (documentMetadataDTO.ContentType.Length > 100)
             {
                 exceptionMessages.Add("The length of the ContentType must be not more than 100 symbols");
             }
-            if (!_contentTypes.Contains(documentMetadata.ContentType))
+            if (!_contentTypes.Contains(documentMetadataDTO.ContentType))
             {
                 exceptionMessages.Add("The ContentType is unknown");
             }
 
-            if (string.IsNullOrEmpty(documentMetadata.ContentMd5))
+            if (string.IsNullOrEmpty(documentMetadataDTO.ContentMd5))
             {
                 exceptionMessages.Add("Please, fill the ContenMD5 out");
             }
-            if (documentMetadata.ContentMd5.Length < 32)
+            if (documentMetadataDTO.ContentMd5.Length < 32)
             {
                 exceptionMessages.Add("The ContentMD5 is too short");
             }
-            if (documentMetadata.ContentMd5.Length > 32)
+            if (documentMetadataDTO.ContentMd5.Length > 32)
             {
                 exceptionMessages.Add("The ContentMD5 is too long");
             }
-            if (!_regexHexademicalNumbers.IsMatch(documentMetadata.ContentMd5))
+            if (!_regexHexademicalNumbers.IsMatch(documentMetadataDTO.ContentMd5))
             {
                 exceptionMessages.Add("The ContentMD5 must consist of hexademical numbers only");
             }
@@ -253,7 +264,6 @@ namespace Mastery.KeeFi.BusinessLogic
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 throw new DocumentApiValidationException(exceptionMessage);
             }
-
         }
     }
 }

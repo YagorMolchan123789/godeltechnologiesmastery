@@ -1,4 +1,4 @@
-﻿using Mastery.KeeFi.Data.Interfaces;
+﻿using Mastery.KeeFi.Business.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.Data
+namespace Mastery.KeeFi.Business.Services
 {
-    public class FIleService : IFileService
+    public class FileService : IFileService
     {
         public void CreateFile(string filePath)
         {

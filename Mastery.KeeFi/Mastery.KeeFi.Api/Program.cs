@@ -1,10 +1,10 @@
 using Mastery.KeeFi.Api.ExceptionHandling;
-using Mastery.KeeFi.BusinessLogic;
-using Mastery.KeeFi.BusinessLogic.Interfaces;
-using Mastery.KeeFi.Common.Configurations;
-using Mastery.KeeFi.Data;
-using Mastery.KeeFi.Data.Interfaces;
+using Mastery.KeeFi.Api.Configurations;
 using Microsoft.OpenApi.Models;
+using AutoMapper;
+using Mastery.KeeFi.Business.Profiles;
+using Mastery.KeeFi.Business.Interfaces;
+using Mastery.KeeFi.Business.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,14 +23,23 @@ var clientPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigK
 var documentPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string), "DocumentPath");
 var documentBlobPath = builder.Configuration.GetSection(DocumentStorageOptions.ConfigKey).GetValue(typeof(string), "DocumentBlobPath");
 
-builder.Services.AddScoped<IFileService, FIleService>();
+var mapperConfig = new MapperConfiguration( mc =>
+{
+    mc.AddProfile(new ClientProfile());
+    mc.AddProfile(new DocumentMetadataProfile());
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IDocumentsMetadataService>(d =>
-    new DocumentsMetadataService(documentPath.ToString()));
+    new DocumentsMetadataService(documentPath.ToString(), mapper));
 
 builder.Services.AddScoped<IClientsService>(c =>
     new ClientsService(clientPath.ToString(), documentBlobPath.ToString(), c.GetRequiredService<IDocumentsMetadataService>(),
-    c.GetRequiredService<IFileService>()));
+    c.GetRequiredService<IFileService>(), mapper));
 
 builder.Services.AddScoped<IDocumentsContentService>(d =>
     new DocumentsContentService(documentBlobPath.ToString(), d.GetRequiredService<IDocumentsMetadataService>(),
@@ -48,16 +57,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1" // The version of the API
     });
 
-    // Determine the file name for the XML documentation
-    //string? xmlFileName = typeof(Program).Assembly.GetName().Name;
-
-    // Build the path to the XML documentation file
-    //string filePath = Path.Combine(AppContext.BaseDirectory, $"{xmlFileName}.xml");
-
-    // Include XML comments in the Swagger documentation, enhancing the documentation with comments from the code
-    //c.IncludeXmlComments(filePath);
-
-    // Enable annotations in Swagger, allowing the use of attributes in the code to further customize the Swagger documentation
     c.EnableAnnotations();
 });
 

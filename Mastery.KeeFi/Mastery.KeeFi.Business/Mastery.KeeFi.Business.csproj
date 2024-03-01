@@ -7,8 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mastery.KeeFi.Common\Mastery.KeeFi.Common.csproj" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Mastery.KeeFi.Data\Mastery.KeeFi.Data.csproj" />
+    <ProjectReference Include="..\Mastery.KeeFi.Domain\Mastery.KeeFi.Domain.csproj" />
   </ItemGroup>
 
 </Project>

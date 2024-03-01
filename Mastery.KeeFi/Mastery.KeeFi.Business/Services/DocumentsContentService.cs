@@ -1,6 +1,6 @@
-﻿using Mastery.KeeFi.BusinessLogic.Interfaces;
+﻿using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
-using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.BusinessLogic
+namespace Mastery.KeeFi.Business.Services
 {
     public class DocumentsContentService : IDocumentsContentService
     {
@@ -101,7 +101,7 @@ namespace Mastery.KeeFi.BusinessLogic
             }
         }
 
-        private void ValidateDownload(MemoryStream content, DocumentMetadata metadata)
+        private void ValidateDownload(MemoryStream content, DocumentMetadataDTO metadata)
         {
             var md5Hash = CalculateMd5Hash(content);
 
