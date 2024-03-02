@@ -31,12 +31,12 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(DocumentMetadata), 200)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<IEnumerable<DocumentMetadataDTO>>> List(
+        public async Task<ActionResult<IEnumerable<DocumentMetadataDto>>> List(
             [FromRoute] int clientId,
             [FromQuery] int? skip,
             [FromQuery] int? take)
         {
-            IEnumerable<DocumentMetadataDTO> result = await _documentsMetadataService.ListDocumentsAsync(clientId, skip, take);
+            IEnumerable<DocumentMetadataDto> result = await _documentsMetadataService.ListDocumentsAsync(clientId, skip, take);
             return Ok(result);
         }
 
@@ -47,9 +47,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<DocumentMetadata>> Post(
             [FromRoute] int clientId,
-            [FromBody] DocumentMetadataDTO documentDTO)
+            [FromBody] DocumentMetadataDto documentDto)
         {
-            DocumentMetadata result = await _documentsMetadataService.CreateDocumentAsync(clientId, documentDTO);
+            DocumentMetadata result = await _documentsMetadataService.CreateDocumentAsync(clientId, documentDto);
             return Created($"/clients/{clientId}/documents/{result.Id}", result);
         }
 
@@ -58,9 +58,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<DocumentMetadataDTO>> Get([FromRoute] int clientId, [FromRoute] int documentId)
+        public async Task<ActionResult<DocumentMetadataDto>> Get([FromRoute] int clientId, [FromRoute] int documentId)
         {
-            DocumentMetadataDTO result = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
+            DocumentMetadataDto result = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
             return Ok(result);
         }
 
@@ -72,9 +72,9 @@ namespace Mastery.KeeFi.Api.Controllers
         public async Task<ActionResult<DocumentMetadata>> Put(
             [FromRoute] int clientId,
             [FromRoute] int documentId,
-            [FromBody] DocumentMetadataDTO documentDTO)
+            [FromBody] DocumentMetadataDto documentDto)
         {
-            DocumentMetadata result = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, documentDTO);
+            DocumentMetadata result = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, documentDto);
             return Ok(result);
         }
 

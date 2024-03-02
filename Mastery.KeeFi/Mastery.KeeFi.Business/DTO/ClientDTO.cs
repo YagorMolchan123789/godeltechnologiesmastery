@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 namespace Mastery.KeeFi.Business.DTO
 {
     [SwaggerSchema(Title = "Client", Description = "A client in the system.")]
-    public class ClientDTO
+    public class ClientDto
     {
         [ReadOnly(true)]
         public int Id { get; set; }
 
         [SwaggerSchema(Title = "Client first name", Description = "The first name of the client.")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [SwaggerSchema(Title = "Client last name", Description = "The last name of the client.")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [SwaggerSchema(Title = "Client date of birth", Description = "The date of birth of the client.")]
         public DateOnly? DateOfBirth { get; set; }

@@ -13,8 +13,8 @@ namespace Mastery.KeeFi.Business.Profiles
     {
         public ClientProfile() 
         {
-            CreateMap<Client, ClientDTO>();
-            CreateMap<ClientDTO, Client>();
+            CreateMap<Client, ClientDto>();
+            CreateMap<ClientDto, Client>();
         }
     }
 }

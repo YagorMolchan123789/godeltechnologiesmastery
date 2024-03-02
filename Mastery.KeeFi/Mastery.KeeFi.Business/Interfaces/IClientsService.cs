@@ -10,13 +10,13 @@ namespace Mastery.KeeFi.Business.Interfaces
 {
     public interface IClientsService
     {
-        Task<IEnumerable<ClientDTO>> ListClientsAsync(int? skip, int? take, string[]? tags);
+        Task<IEnumerable<ClientDto>> ListClientsAsync(int? skip, int? take, string[]? tags);
 
-        Task<ClientDTO> GetClientAsync(int clientId);
+        Task<ClientDto> GetClientAsync(int clientId);
 
-        Task<Client> CreateClientAsync(ClientDTO clientDTO);
+        Task<Client> CreateClientAsync(ClientDto clientDTO);
 
-        Task<Client> UpdateClientAsync(int clientId, ClientDTO clientDTO);
+        Task<Client> UpdateClientAsync(int clientId, ClientDto clientDTO);
 
         Task DeleteClientAsync(int clientId);
     }

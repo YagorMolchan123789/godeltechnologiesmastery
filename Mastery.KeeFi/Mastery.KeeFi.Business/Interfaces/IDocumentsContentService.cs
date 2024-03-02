@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Mastery.KeeFi.Business.Interfaces
 {
-    public record ReceiveDocumentResponse(Stream Content, DocumentMetadataDTO Metadata);
+    public record ReceiveDocumentResponse(Stream Content, DocumentMetadataDto Metadata);
 
     public interface IDocumentsContentService
     {

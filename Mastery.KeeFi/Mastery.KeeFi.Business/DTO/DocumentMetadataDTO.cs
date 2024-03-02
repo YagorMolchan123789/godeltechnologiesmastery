@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Mastery.KeeFi.Business.DTO
 {
     [SwaggerSchema(Title = "DocumentMetadata", Description = "Metadata for a document in the system.")]
-    public class DocumentMetadataDTO
+    public class DocumentMetadataDto
     {
         [ReadOnly(true)]
         public int Id { get; set; }

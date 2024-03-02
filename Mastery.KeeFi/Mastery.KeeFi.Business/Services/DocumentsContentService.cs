@@ -101,7 +101,7 @@ namespace Mastery.KeeFi.Business.Services
             }
         }
 
-        private void ValidateDownload(MemoryStream content, DocumentMetadataDTO metadata)
+        private void ValidateDownload(MemoryStream content, DocumentMetadataDto metadata)
         {
             var md5Hash = CalculateMd5Hash(content);
 

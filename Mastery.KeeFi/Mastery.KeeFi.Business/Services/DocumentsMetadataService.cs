@@ -2,6 +2,7 @@
 using Mastery.KeeFi.Business.DTO;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -32,71 +33,78 @@ namespace Mastery.KeeFi.Business.Services
         private readonly Regex _regexHexademicalNumbers = new Regex("[0-9a-fA-F]+");
         private readonly Regex _regexContentLength = new Regex("^[+]?\\d+([.]\\d+)?$");
 
+        private readonly IClientsRepository _clientsRepository;
+        private readonly IDocumentsMetadataRepository _documentsMetadataRepository;
         private readonly IMapper _mapper;
 
-        public DocumentsMetadataService(string filePath, IMapper mapper)
+        public DocumentsMetadataService(string filePath, IClientsRepository clientsRepository,
+            IDocumentsMetadataRepository documentsMetadataRepository, IMapper mapper)
         {
             _filePath = filePath;
+            _clientsRepository = clientsRepository;
+            _documentsMetadataRepository = documentsMetadataRepository;
             _mapper = mapper;
         }
 
-        public async Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadataDTO documentMetadataDTO)
+        public async Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadataDto documentMetadataDto)
         {
-            Validate(documentMetadataDTO);
+            Validate(documentMetadataDto);
 
-            var documentsJson = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
+            var documents = _documentsMetadataRepository.GetAll();
 
-            var documentMetadata = _mapper.Map<DocumentMetadata>(documentMetadataDTO);
+            var documentMetadata = _mapper.Map<DocumentMetadata>(documentMetadataDto);
 
-            documentMetadata.Id = (documents?.Count == 0) ? 1 : documents.Max(d => d.Id) + 1;
-            documentMetadata.ClientId = clientId;
-            documents.Add(documentMetadata);
+            var client = _clientsRepository.GetClient(clientId);
 
-            var serializedDocuments = JsonSerializer.Serialize<List<DocumentMetadata>>(documents, new JsonSerializerOptions
+            if (client == null)
             {
-                AllowTrailingCommas = true
-            });
+                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+            }
 
-            File.WriteAllText(_filePath, serializedDocuments);
+            documentMetadata.Id = (documents?.Count() == 0) ? 1 : documents.Max(d => d.Id) + 1;
+            documentMetadata.ClientId = clientId;
+           
+            _documentsMetadataRepository.Add(documentMetadata);
+            _documentsMetadataRepository.SaveChanges();
+
             return documentMetadata;
         }
 
         public async Task DeleteDocumentAsync(int clientId, int documentId)
         {
-            var documentsJson = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var document = documents?.FirstOrDefault(d => d.ClientId == clientId && d.Id == documentId &&
-                !d.Properties.ContainsKey("deleted"));
+            var document = _documentsMetadataRepository.GetDocument(clientId, documentId);
 
             if (document == null)
             {
                 throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
             }
 
-            document.Properties["deleted"] = "true";
-            var serializedDocuments = JsonSerializer.Serialize<List<DocumentMetadata>>(documents);
-            File.WriteAllText(_filePath, serializedDocuments);
+            _documentsMetadataRepository.Remove(document);
+            _documentsMetadataRepository.SaveChanges();
         }
 
-        public async Task<DocumentMetadataDTO> GetDocumentAsync(int clientId, int documentId)
+        public async Task<DocumentMetadataDto> GetDocumentAsync(int clientId, int documentId)
         {
-            var documentsJson = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var document = documents?.FirstOrDefault(d => d.ClientId == clientId && d.Id == documentId &&
-                !d.Properties.ContainsKey("deleted"));
+            var client = _clientsRepository.GetClient(clientId);
+
+            if (client == null)
+            {
+                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} may be deleted");
+            }
+
+            var document = _documentsMetadataRepository.GetDocument(clientId, documentId);
 
             if (document == null)
             {
                 throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
             }
 
-            var documentDTO = _mapper.Map<DocumentMetadataDTO>(document);   
+            var documentDTO = _mapper.Map<DocumentMetadataDto>(document);   
 
             return documentDTO;
         }
 
-        public async Task<IEnumerable<DocumentMetadataDTO>> ListDocumentsAsync(int clientId, int? skip, int? take)
+        public async Task<IEnumerable<DocumentMetadataDto>> ListDocumentsAsync(int clientId, int? skip, int? take)
         {
             if (skip < 0)
             {
@@ -107,154 +115,129 @@ namespace Mastery.KeeFi.Business.Services
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
-            var documentsJson = File.ReadAllText(_filePath);
-            var deserializedDocuments = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var query = deserializedDocuments?.AsQueryable().Where(d => d.ClientId == clientId &&
-                !d.Properties.ContainsKey("deleted"));
+            var deserializedDocuments = _documentsMetadataRepository.GetAll();
 
-            if (query?.Any() == false)
-            {
-                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-            }
-
-            if (skip != null && skip > 0)
-            {
-                query = query?.Skip(skip.Value);
-            }
-
-            if (take > deserializedDocuments?.Count)
+            if (take > deserializedDocuments?.Count())
             {
                 throw new DocumentApiValidationException("Take is more than count of the documents");
             }
 
-            if (take != null && take > 0)
-            {
-                query = query?.Take(take.Value);
-            }
-
-            var documents = query?.ToList();
+            var documents = _documentsMetadataRepository.GetDocuments(clientId, skip, take);
 
             if (documents?.Any() == false)
             {
-                throw new DocumentApiValidationException($"There are no documents that blong to the client with Id={clientId}");
+                throw new DocumentApiEntityNotFoundException($"There are no documents that blong to the client with Id={clientId}");
             }
 
-            var documentDTOs = _mapper.Map<List<DocumentMetadataDTO>>(documents);
+            var documentDTOs = _mapper.Map<List<DocumentMetadataDto>>(documents);
 
             return documentDTOs;
         }
 
-        public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDTO documentMetadataDTO)
+        public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDto documentMetadataDto)
         {
-            var documentsJson = File.ReadAllText(_filePath);
-            var documents = JsonSerializer.Deserialize<List<DocumentMetadata>>(documentsJson);
-            var document = documents?.FirstOrDefault(d => d.ClientId == clientId && d.Id == documentId &&
-                !d.Properties.ContainsKey("deleted"));
+            var document = _documentsMetadataRepository.GetDocument(clientId, documentId);
 
             if (document == null)
             {
                 throw new DocumentApiEntityNotFoundException($"Document not found id = {documentId}  clientId={clientId}");
             }
 
-            Validate(documentMetadataDTO);
+            Validate(documentMetadataDto);
+            documentMetadataDto.Id = documentId;
+            documentMetadataDto.ClientId = clientId;
 
-            document.FileName = documentMetadataDTO.FileName;
-            document.Title = documentMetadataDTO.Title;
-            document.Description = documentMetadataDTO.Description;
-            document.Properties = documentMetadataDTO.Properties;
-            document.ContentLength = documentMetadataDTO.ContentLength;
-            document.ContentType = documentMetadataDTO.ContentType;
-            document.ContentMd5 = documentMetadataDTO.ContentMd5;
+            var documentNew = _mapper.Map<DocumentMetadata>(documentMetadataDto);
 
-            var serializedDocuments = JsonSerializer.Serialize(documents);
-            File.WriteAllText(_filePath, serializedDocuments);
+            _documentsMetadataRepository.Update(documentNew);
+            _documentsMetadataRepository.SaveChanges();
 
-            return document;
+            return documentNew;
         }
 
-        private void Validate(DocumentMetadataDTO documentMetadataDTO)
+        private void Validate(DocumentMetadataDto documentMetadataDto)
         {
             List<string> exceptionMessages = new List<string>();
 
-            if (string.IsNullOrEmpty(documentMetadataDTO.FileName))
+            if (string.IsNullOrEmpty(documentMetadataDto.FileName))
             {
                 exceptionMessages.Add("Please, fill the FileName out");
             }
-            if (documentMetadataDTO.FileName.Length > 255)
+            if (documentMetadataDto.FileName.Length > 255)
             {
                 exceptionMessages.Add("The length of the FileName must be not more than 255 symbols");
             }
-            if (!_regexFileName.IsMatch(documentMetadataDTO.FileName))
+            if (!_regexFileName.IsMatch(documentMetadataDto.FileName))
             {
                 exceptionMessages.Add("The FileName must consist of English alphanumeric letters and digits, ., -, _");
             }
 
-            if (string.IsNullOrEmpty(documentMetadataDTO.Title))
+            if (string.IsNullOrEmpty(documentMetadataDto.Title))
             {
                 exceptionMessages.Add("Plese, fill the Title out");
             }
-            if (documentMetadataDTO?.Title?.Length > 150)
+            if (documentMetadataDto?.Title?.Length > 150)
             {
                 exceptionMessages.Add("The length of the Title must be more than 150 symbols");
             }
 
-            if (documentMetadataDTO?.Description?.Length > 400)
+            if (documentMetadataDto?.Description?.Length > 400)
             {
                 exceptionMessages.Add("The length of the Description must be mot more than 400 symbols");
             }
 
-            if (documentMetadataDTO?.ContentLength == 0)
+            if (documentMetadataDto?.ContentLength == 0)
             {
                 exceptionMessages.Add("The ContentLength must be more than 0");
             }
-            if (!_regexContentLength.IsMatch(documentMetadataDTO.ContentLength.ToString()))
+            if (!_regexContentLength.IsMatch(documentMetadataDto.ContentLength.ToString()))
             {
                 exceptionMessages.Add("The ContentLength must contain only of the numbers");
             }
 
-            if (documentMetadataDTO?.Properties.Keys.Count > 10)
+            if (documentMetadataDto?.Properties.Keys.Count > 10)
             {
                 exceptionMessages.Add("The count of keys must be more than 0");
             }
-            if (documentMetadataDTO?.Properties.Keys.Distinct().Count() != documentMetadataDTO?.Properties.Count)
+            if (documentMetadataDto?.Properties.Keys.Distinct().Count() != documentMetadataDto?.Properties.Count)
             {
                 exceptionMessages.Add("All the keys must be unique");
             }
-            if ((bool)(documentMetadataDTO?.Properties.Keys.Any(k => k.Length > 20)))
+            if ((bool)(documentMetadataDto?.Properties.Keys.Any(k => k.Length > 20)))
             {
                 exceptionMessages.Add("The length of the key of the Properties must be not more than 20 symbols");
             }
-            if (documentMetadataDTO.Properties.Keys.Any(k => !_regexProperties.IsMatch(k)))
+            if (documentMetadataDto.Properties.Keys.Any(k => !_regexProperties.IsMatch(k)))
             {
                 exceptionMessages.Add("All the keys of the Properites must consist of English letters only");
             }
 
-            if (string.IsNullOrEmpty(documentMetadataDTO.ContentType))
+            if (string.IsNullOrEmpty(documentMetadataDto.ContentType))
             {
                 exceptionMessages.Add("Please, fill the ContentType out");
             }
-            if (documentMetadataDTO.ContentType.Length > 100)
+            if (documentMetadataDto.ContentType.Length > 100)
             {
                 exceptionMessages.Add("The length of the ContentType must be not more than 100 symbols");
             }
-            if (!_contentTypes.Contains(documentMetadataDTO.ContentType))
+            if (!_contentTypes.Contains(documentMetadataDto.ContentType))
             {
                 exceptionMessages.Add("The ContentType is unknown");
             }
 
-            if (string.IsNullOrEmpty(documentMetadataDTO.ContentMd5))
+            if (string.IsNullOrEmpty(documentMetadataDto.ContentMd5))
             {
                 exceptionMessages.Add("Please, fill the ContenMD5 out");
             }
-            if (documentMetadataDTO.ContentMd5.Length < 32)
+            if (documentMetadataDto.ContentMd5.Length < 32)
             {
                 exceptionMessages.Add("The ContentMD5 is too short");
             }
-            if (documentMetadataDTO.ContentMd5.Length > 32)
+            if (documentMetadataDto.ContentMd5.Length > 32)
             {
                 exceptionMessages.Add("The ContentMD5 is too long");
             }
-            if (!_regexHexademicalNumbers.IsMatch(documentMetadataDTO.ContentMd5))
+            if (!_regexHexademicalNumbers.IsMatch(documentMetadataDto.ContentMd5))
             {
                 exceptionMessages.Add("The ContentMD5 must consist of hexademical numbers only");
             }

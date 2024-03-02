@@ -2,6 +2,7 @@
 using Mastery.KeeFi.Business.DTO;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,10 @@ namespace Mastery.KeeFi.Business.Services
     {
         private readonly string _filePath;
         private readonly string _blobPath;
-        private readonly IDocumentsMetadataService _documentsMetadataService;
+
+        private readonly IClientsRepository _clientRepository;
+        private readonly IDocumentsMetadataRepository _documentMetadataRepository;
+
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
@@ -25,80 +29,76 @@ namespace Mastery.KeeFi.Business.Services
         private readonly Regex _regexNumberTags = new Regex("[0-9]");
         private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
 
-        public ClientsService(string filePath, string blobPath, IDocumentsMetadataService documentsMetadataService,
-            IFileService fileService, IMapper mapper)
+        public ClientsService(string filePath, string blobPath, IClientsRepository clientsRepository,
+            IDocumentsMetadataRepository documentsMetadataRepository, IFileService fileService, IMapper mapper)
         {
             _filePath = filePath;
             _blobPath = blobPath;
-            _documentsMetadataService = documentsMetadataService;
+            _clientRepository = clientsRepository;
+            _documentMetadataRepository = documentsMetadataRepository;
             _fileService = fileService;
             _mapper = mapper;
         }
 
-        public async Task<Client> CreateClientAsync(ClientDTO clientDTO)
+        public async Task<Client> CreateClientAsync(ClientDto clientDto)
         {
-            Validate(clientDTO);
+            Validate(clientDto);
 
-            var clientsJson = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
+            var clients = _clientRepository.GetAll();
 
-            var client = _mapper.Map<Client>(clientDTO);
+            clientDto.Id = (clients?.Count() == 0) ? 1 : clients.Max(c => c.Id) + 1;
 
-            client.Id = (clients?.Count == 0) ? 1 : clients.Max(c => c.Id) + 1;
-            clients?.Add(client);
-
-            var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
-            File.WriteAllText(_filePath, serializedClients);
+            var client = _mapper.Map<Client>(clientDto);
+            
+            _clientRepository.Add(client);
+            _clientRepository.SaveChanges();
 
             return client;
         }
 
         public async Task DeleteClientAsync(int clientId)
         {
-            var clientsJson = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var client = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
+            var client = _clientRepository.GetClient(clientId);
 
             if (client == null)
             {
                 throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
 
-            var documents = await _documentsMetadataService.ListDocumentsAsync(clientId, null, null);
+            var documents =  _documentMetadataRepository.GetDocuments(clientId, null, null);
 
             if (documents.Any())
             {
                 foreach (var document in documents)
                 {
-                    _documentsMetadataService?.DeleteDocumentAsync(clientId, document.Id);
+                    _documentMetadataRepository.Remove(document);
                 }
+
+                _documentMetadataRepository.SaveChanges();
             }
 
             string targetPath = Path.Combine(_blobPath, client.Id.ToString());
             _fileService.DeleteDirectory(targetPath);
 
-            client.Tags = client.Tags.Concat(new string[] { "deleted" }).ToArray();
-            var serializedClients = JsonSerializer.Serialize<List<Client>>(clients);
-            File.WriteAllText(_filePath, serializedClients);
+            _clientRepository.Remove(client);
+            _clientRepository.SaveChanges();
         }
 
-        public async Task<ClientDTO> GetClientAsync(int clientId)
+        public async Task<ClientDto> GetClientAsync(int clientId)
         {
-            var clientsJson = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var client = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
+            var client = _clientRepository.GetClient(clientId);
 
             if (client == null)
             {
                 throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
 
-            var clientDTO = _mapper.Map<ClientDTO>(client);
+            var clientDTO = _mapper.Map<ClientDto>(client);
 
             return clientDTO;
         }
 
-        public async Task<IEnumerable<ClientDTO>> ListClientsAsync(int? skip, int? take, string[]? tags)
+        public async Task<IEnumerable<ClientDto>> ListClientsAsync(int? skip, int? take, string[]? tags)
         {
             if (skip < 0)
             {
@@ -109,105 +109,88 @@ namespace Mastery.KeeFi.Business.Services
                 throw new DocumentApiValidationException("Take must be more than 0");
             }
 
-            var clientsJson = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-
-            if (!clients.Any())
-            {
-                throw new DocumentApiEntityNotFoundException("There are no clients");
-            }
-
-            var query = clients?.AsQueryable().Where(c => !c.Tags.Contains("deleted"));
-
-            if (tags.Any())
-            {
-                var distinctedTags = tags.Distinct();
-                Validate(tags);
-                query = query?.Where(q => q.Tags.Any(t => distinctedTags.Contains(t)));
-            }
-
-            if (skip != null && skip > 0)
-            {
-                query = query?.Skip(skip.Value);
-            }
-
-            if (take > clients?.Count)
+            var allCLients = _clientRepository.GetAll();
+            
+            if (take > allCLients?.Count())
             {
                 throw new DocumentApiValidationException("Take is more than count of the clients");
             }
 
-            if (take != null && take > 0)
+            if (!allCLients.Any())
             {
-                query = query?.Take(take.Value);
+                throw new DocumentApiEntityNotFoundException("There are no clients");
             }
 
-            var clientDTOs = _mapper.Map<List<ClientDTO>>(query);
+            if (tags.Any())
+            {
+                Validate(tags);
+            }
+
+            var clients = _clientRepository.GetClients(skip, take, tags);
+            var clientDTOs = _mapper.Map<List<ClientDto>>(clients);
 
             return clientDTOs;
         }
 
-        public async Task<Client> UpdateClientAsync(int clientId, ClientDTO clientDTO)
+        public async Task<Client> UpdateClientAsync(int clientId, ClientDto clientDto)
         {
-            var clientsJson = File.ReadAllText(_filePath);
-            var clients = JsonSerializer.Deserialize<List<Client>>(clientsJson);
-            var clientNew = clients?.FirstOrDefault(c => c.Id == clientId && !c.Tags.Contains("deleted"));
+            var clientNew = _clientRepository.GetClient(clientId);
 
             if (clientNew == null)
             {
                 throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
 
-            Validate(clientDTO);
+            Validate(clientDto);
 
-            clientNew.FirstName = clientDTO.FirstName;
-            clientNew.LastName = clientDTO.LastName;
-            clientNew.DateOfBirth = clientDTO.DateOfBirth;
-            clientNew.Tags = clientDTO.Tags;
+            clientDto.Id = clientId;
 
-            var serializedClients = JsonSerializer.Serialize(clients);
-            File.WriteAllText(_filePath, serializedClients);
+            clientNew = _mapper.Map<Client>(clientDto);
+
+            _clientRepository.Update(clientNew);
+            _clientRepository.SaveChanges();
 
             return clientNew;
         }
 
-        private void Validate(ClientDTO clientDTO)
+        private void Validate(ClientDto clientDto)
         {
             List<string> exceptionMessages = new List<string>();
 
-            if (String.IsNullOrEmpty(clientDTO?.FirstName))
+            if (String.IsNullOrEmpty(clientDto?.FirstName))
             {
                 exceptionMessages.Add("Please, fill the FirstName out");
             }
-            if (clientDTO?.FirstName?.Length > 50)
+            if (clientDto?.FirstName?.Length > 50)
             {
                 exceptionMessages.Add("The length of FirstName must be not more than 50 symbols");
             }
 
-            if (String.IsNullOrEmpty(clientDTO?.LastName))
+            if (String.IsNullOrEmpty(clientDto?.LastName))
             {
                 exceptionMessages.Add("Please, fill the LastName out");
             }
-            if (clientDTO?.LastName?.Length > 50)
+            if (clientDto?.LastName?.Length > 50)
             {
                 exceptionMessages.Add("The length of LastName must be not more than 50 symbols");
             }
 
-            if (!clientDTO.DateOfBirth.HasValue)
+            if (!clientDto.DateOfBirth.HasValue)
             {
                 throw new DocumentApiValidationException("Please, fill the DateOfBirth out");
             }
-            if (GetAge(clientDTO) > 130)
+            if (GetAge(clientDto) > 130)
             {
                 exceptionMessages.Add("The client should not be older than 130 years");
             }
-            if ((clientDTO.DateOfBirth?.DayNumber - DateOnly.FromDateTime(DateTime.Now).DayNumber) > 0)
+            if ((clientDto.DateOfBirth?.DayNumber - DateOnly.FromDateTime(DateTime.Now).DayNumber) > 0)
             {
                 exceptionMessages.Add("The client cannot have the Birth Date from the future");
             }
 
-            if (clientDTO.Tags.Any())
+            if (clientDto.Tags.Any())
             {
-                Validate(clientDTO.Tags, exceptionMessages);
+                Validate(clientDto.Tags, exceptionMessages);
             }
 
             if (exceptionMessages.Any())
@@ -259,7 +242,7 @@ namespace Mastery.KeeFi.Business.Services
             }
         }
 
-        private int GetAge(ClientDTO clientDTO)
+        private int GetAge(ClientDto clientDTO)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
             var age = today.Year - clientDTO.DateOfBirth?.Year;

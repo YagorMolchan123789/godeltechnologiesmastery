@@ -13,8 +13,8 @@ namespace Mastery.KeeFi.Business.Profiles
     {
         public DocumentMetadataProfile() 
         {
-            CreateMap<DocumentMetadata, DocumentMetadataDTO>();
-            CreateMap<DocumentMetadataDTO, DocumentMetadata>();
+            CreateMap<DocumentMetadata, DocumentMetadataDto>();
+            CreateMap<DocumentMetadataDto, DocumentMetadata>();
         }
     }
 }

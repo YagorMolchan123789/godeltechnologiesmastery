@@ -5,6 +5,9 @@ using AutoMapper;
 using Mastery.KeeFi.Business.Profiles;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Business.Services;
+using Mastery.KeeFi.Data.Interfaces;
+using Mastery.KeeFi.Data.Repositories;
+using Mastery.KeeFi.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,14 +35,21 @@ var mapperConfig = new MapperConfiguration( mc =>
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
+builder.Services.AddScoped<IClientsRepository>(c => 
+    new ClientsRepository(clientPath.ToString()));
+
+builder.Services.AddScoped<IDocumentsMetadataRepository>(d =>
+    new DocumentsMetadataRepository(documentPath.ToString()));
+
 builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IDocumentsMetadataService>(d =>
-    new DocumentsMetadataService(documentPath.ToString(), mapper));
+    new DocumentsMetadataService(documentPath.ToString(), d.GetRequiredService<IClientsRepository>(),
+    d.GetRequiredService<IDocumentsMetadataRepository>(), mapper));
 
 builder.Services.AddScoped<IClientsService>(c =>
-    new ClientsService(clientPath.ToString(), documentBlobPath.ToString(), c.GetRequiredService<IDocumentsMetadataService>(),
-    c.GetRequiredService<IFileService>(), mapper));
+    new ClientsService(clientPath.ToString(), documentBlobPath.ToString(), c.GetRequiredService<IClientsRepository>(),
+    c.GetRequiredService<IDocumentsMetadataRepository>(), c.GetRequiredService<IFileService>(), mapper));
 
 builder.Services.AddScoped<IDocumentsContentService>(d =>
     new DocumentsContentService(documentBlobPath.ToString(), d.GetRequiredService<IDocumentsMetadataService>(),
