@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
 using Mastery.KeeFi.Data.Interfaces;
@@ -144,15 +144,19 @@ namespace Mastery.KeeFi.Business.Services
             }
 
             Validate(documentMetadataDto);
-            documentMetadataDto.Id = documentId;
-            documentMetadataDto.ClientId = clientId;
+            
+            document.FileName = documentMetadataDto.FileName;
+            document.Title = documentMetadataDto.Title;
+            document.Description = documentMetadataDto.Description;
+            document.ContentLength = documentMetadataDto.ContentLength;
+            document.ContentType = documentMetadataDto.ContentType;
+            document.ContentMd5 = documentMetadataDto.ContentMd5;
+            document.Properties = documentMetadataDto.Properties;
 
-            var documentNew = _mapper.Map<DocumentMetadata>(documentMetadataDto);
-
-            _documentsMetadataRepository.Update(documentNew);
+            _documentsMetadataRepository.Update(document);
             _documentsMetadataRepository.SaveChanges();
 
-            return documentNew;
+            return document;
         }
 
         private void Validate(DocumentMetadataDto documentMetadataDto)

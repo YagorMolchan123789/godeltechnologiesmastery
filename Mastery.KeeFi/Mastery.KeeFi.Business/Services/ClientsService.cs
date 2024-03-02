@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
 using Mastery.KeeFi.Data.Interfaces;
@@ -134,9 +134,9 @@ namespace Mastery.KeeFi.Business.Services
 
         public async Task<Client> UpdateClientAsync(int clientId, ClientDto clientDto)
         {
-            var clientNew = _clientRepository.GetClient(clientId);
+            var client = _clientRepository.GetClient(clientId);
 
-            if (clientNew == null)
+            if (client == null)
             {
                 throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
             }
@@ -145,12 +145,15 @@ namespace Mastery.KeeFi.Business.Services
 
             clientDto.Id = clientId;
 
-            clientNew = _mapper.Map<Client>(clientDto);
+            client.FirstName = clientDto.FirstName;
+            client.LastName = clientDto.LastName;
+            client.DateOfBirth = clientDto.DateOfBirth;
+            client.Tags = clientDto.Tags;
 
-            _clientRepository.Update(clientNew);
+            _clientRepository.Update(client);
             _clientRepository.SaveChanges();
 
-            return clientNew;
+            return client;
         }
 
         private void Validate(ClientDto clientDto)
@@ -242,12 +245,12 @@ namespace Mastery.KeeFi.Business.Services
             }
         }
 
-        private int GetAge(ClientDto clientDTO)
+        private int GetAge(ClientDto clientDto)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
-            var age = today.Year - clientDTO.DateOfBirth?.Year;
+            var age = today.Year - clientDto.DateOfBirth?.Year;
 
-            if (clientDTO.DateOfBirth > today.AddYears(-age.Value))
+            if (clientDto.DateOfBirth > today.AddYears(-age.Value))
             {
                 age--;
             }

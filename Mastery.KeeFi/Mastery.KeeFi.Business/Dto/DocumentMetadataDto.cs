@@ -1,13 +1,13 @@
 ﻿using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.Business.DTO
+namespace Mastery.KeeFi.Business.Dto
 {
     [SwaggerSchema(Title = "DocumentMetadata", Description = "Metadata for a document in the system.")]
     public class DocumentMetadataDto

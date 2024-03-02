@@ -1,4 +1,4 @@
-﻿using Mastery.KeeFi.Business.DTO;
+﻿using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -14,9 +14,9 @@ namespace Mastery.KeeFi.Business.Interfaces
 
         Task<ClientDto> GetClientAsync(int clientId);
 
-        Task<Client> CreateClientAsync(ClientDto clientDTO);
+        Task<Client> CreateClientAsync(ClientDto clientDto);
 
-        Task<Client> UpdateClientAsync(int clientId, ClientDto clientDTO);
+        Task<Client> UpdateClientAsync(int clientId, ClientDto clientDto);
 
         Task DeleteClientAsync(int clientId);
     }

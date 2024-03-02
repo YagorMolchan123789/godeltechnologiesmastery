@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Mastery.KeeFi.Api.Configurations;
-using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using Microsoft.AspNetCore.Http;

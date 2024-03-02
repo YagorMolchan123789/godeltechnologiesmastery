@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Api.Configurations;
-using Mastery.KeeFi.Business.DTO;
+using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Domain.Entities;
 
 namespace Mastery.KeeFi.Api.Controllers
@@ -54,9 +54,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(Client), 201)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<Client>> Post([FromBody] ClientDto clientDTO)
+        public async Task<ActionResult<Client>> Post([FromBody] ClientDto clientDto)
         {
-            Client result = await _clientsService.CreateClientAsync(clientDTO);
+            Client result = await _clientsService.CreateClientAsync(clientDto);
             return Created($"/clients/{result.Id}", result);
         }
 
@@ -65,9 +65,9 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<Client>> Put([FromRoute] int clientId, [FromBody] ClientDto clientDTO)
+        public async Task<ActionResult<Client>> Put([FromRoute] int clientId, [FromBody] ClientDto clientDto)
         {
-            Client result = await _clientsService.UpdateClientAsync(clientId, clientDTO);
+            Client result = await _clientsService.UpdateClientAsync(clientId, clientDto);
             return Ok(result);
         }
 

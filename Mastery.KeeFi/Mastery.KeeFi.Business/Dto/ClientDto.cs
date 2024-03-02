@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.Business.DTO
+namespace Mastery.KeeFi.Business.Dto
 {
     [SwaggerSchema(Title = "Client", Description = "A client in the system.")]
     public class ClientDto

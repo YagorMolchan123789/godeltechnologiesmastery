@@ -1,4 +1,4 @@
-﻿using Mastery.KeeFi.Business.DTO;
+﻿using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
 using Mastery.KeeFi.Common.Exceptions;
 using Mastery.KeeFi.Domain.Entities;

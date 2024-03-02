@@ -13,7 +13,7 @@ namespace GTE.Mastery.Documents.Api.Controllers
     {
         private readonly IDocumentsMetadataService _documentsMetadataService;
 
-        public DocumentsMetadataController(IOptions<DocumentStorageOptions> documentStorageConfig)
+        public DocumentsMetadataController(IOptions<DocumentStorageOptions> documentStorageConfig, IClientsService clientsService)
         {
             if (documentStorageConfig == null)
             {
