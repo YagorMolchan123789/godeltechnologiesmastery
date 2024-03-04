@@ -14,12 +14,11 @@ namespace Mastery.KeeFi.Api.Controllers
     {
         private readonly IDocumentsContentService _documentsContentService;
 
-        public DocumentsContentController(IOptions<DocumentStorageOptions> documentStorageConfig, 
-            IDocumentsContentService documentsContentService)
+        public DocumentsContentController(IDocumentsContentService documentsContentService)
         {
-            if (documentStorageConfig == null)
+            if (documentsContentService == null)
             {
-                throw new ArgumentNullException(nameof(documentStorageConfig));
+                throw new ArgumentNullException(nameof(documentsContentService));
             }
 
             _documentsContentService = documentsContentService;

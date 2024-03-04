@@ -16,6 +16,11 @@ namespace Mastery.KeeFi.Data.Repositories
 
         public DocumentsMetadataRepository(string filePath)
         {
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
             _filePath = filePath;
         }
 

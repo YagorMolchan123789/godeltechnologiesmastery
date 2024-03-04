@@ -16,11 +16,11 @@ namespace Mastery.KeeFi.Api.Controllers
     {
         private readonly IClientsService _clientsService;
 
-        public ClientsController(IOptions<DocumentStorageOptions> documentStorageConfig, IClientsService clientsService)
+        public ClientsController(IClientsService clientsService)
         {
-            if(documentStorageConfig == null)
+            if (clientsService == null)
             {
-                throw new ArgumentNullException(nameof(documentStorageConfig));
+                throw new ArgumentNullException(nameof(clientsService));
             }
 
             _clientsService = clientsService;

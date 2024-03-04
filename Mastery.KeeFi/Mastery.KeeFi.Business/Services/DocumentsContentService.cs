@@ -1,6 +1,6 @@
 ﻿using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
-using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Business.Exceptions;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,26 @@ namespace Mastery.KeeFi.Business.Services
 
         public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService, IClientsService clientsService, IFileService fileService)
         {
+            if (blobPath == null)
+            {
+                throw new ArgumentNullException(nameof(blobPath));  
+            }
+
+            if (documentsMetadataService == null)
+            {
+                throw new ArgumentNullException(nameof(documentsMetadataService));
+            }
+
+            if (clientsService == null)
+            {
+                throw new ArgumentNullException(nameof(clientsService));
+            }
+
+            if (fileService == null)
+            {
+                throw new ArgumentNullException(nameof(fileService));
+            }
+
             _blobPath = blobPath;
             _documentsMetadataService = documentsMetadataService;
             _clientsService = clientsService;

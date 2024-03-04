@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
-using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Business.Exceptions;
 using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
@@ -16,8 +16,6 @@ namespace Mastery.KeeFi.Business.Services
 {
     public class DocumentsMetadataService : IDocumentsMetadataService
     {
-        private string _filePath;
-
         private readonly string[] _contentTypes =
         [
             "application/pdf",
@@ -37,10 +35,24 @@ namespace Mastery.KeeFi.Business.Services
         private readonly IDocumentsMetadataRepository _documentsMetadataRepository;
         private readonly IMapper _mapper;
 
-        public DocumentsMetadataService(string filePath, IClientsRepository clientsRepository,
+        public DocumentsMetadataService(IClientsRepository clientsRepository,
             IDocumentsMetadataRepository documentsMetadataRepository, IMapper mapper)
         {
-            _filePath = filePath;
+            if (clientsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(clientsRepository));
+            }
+
+            if (documentsMetadataRepository == null)
+            {
+                throw new ArgumentNullException(nameof(documentsMetadataRepository));   
+            }
+
+            if (mapper == null)
+            {
+                throw new ArgumentNullException(nameof(mapper));
+            }
+            
             _clientsRepository = clientsRepository;
             _documentsMetadataRepository = documentsMetadataRepository;
             _mapper = mapper;

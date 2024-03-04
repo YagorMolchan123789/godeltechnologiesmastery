@@ -16,12 +16,11 @@ namespace Mastery.KeeFi.Api.Controllers
     {
         private readonly IDocumentsMetadataService _documentsMetadataService;
 
-        public DocumentsMetadataController(IOptions<DocumentStorageOptions> documentStorageConfig, 
-            IDocumentsMetadataService documentsMetadataService)
+        public DocumentsMetadataController(IDocumentsMetadataService documentsMetadataService)
         {
-            if(documentStorageConfig == null)
+            if (documentsMetadataService == null)
             {
-                throw new ArgumentNullException(nameof(documentStorageConfig));
+                throw new ArgumentNullException(nameof(documentsMetadataService));
             }
 
             _documentsMetadataService = documentsMetadataService;
