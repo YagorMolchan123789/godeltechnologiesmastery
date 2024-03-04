@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mastery.KeeFi.Common.Exceptions
+namespace Mastery.KeeFi.Business.Exceptions
 {
     [Serializable]
     public class DocumentApiEntityNotFoundException : DocumentApiBaseException
