@@ -1,4 +1,4 @@
-﻿using Mastery.KeeFi.Common.Exceptions;
+﻿using Mastery.KeeFi.Business.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
