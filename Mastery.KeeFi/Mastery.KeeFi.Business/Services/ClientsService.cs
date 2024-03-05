@@ -31,7 +31,7 @@ namespace Mastery.KeeFi.Business.Services
         public ClientsService(string blobPath, IClientsRepository clientsRepository,
             IDocumentsMetadataRepository documentsMetadataRepository, IFileService fileService, IMapper mapper)
         {
-            if (blobPath == null)
+            if (string.IsNullOrEmpty(blobPath))
             {
                 throw new ArgumentNullException(nameof(blobPath));  
             }

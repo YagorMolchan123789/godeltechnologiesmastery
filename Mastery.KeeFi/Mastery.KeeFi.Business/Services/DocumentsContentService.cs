@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -20,9 +21,10 @@ namespace Mastery.KeeFi.Business.Services
 
         private readonly int _maxContentLength = 1048576;
 
-        public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService, IClientsService clientsService, IFileService fileService)
+        public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService,
+            IClientsService clientsService, IFileService fileService)
         {
-            if (blobPath == null)
+            if (string.IsNullOrEmpty(blobPath))
             {
                 throw new ArgumentNullException(nameof(blobPath));  
             }
@@ -76,7 +78,7 @@ namespace Mastery.KeeFi.Business.Services
 
             FileStream uploadStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
             uploadStream.Write(content.ToArray(), 0, metadata.ContentLength);
-            uploadStream.Close();
+            uploadStream.Close();           
         }
 
         public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)
