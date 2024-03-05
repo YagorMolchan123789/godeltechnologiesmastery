@@ -16,6 +16,11 @@ namespace Mastery.KeeFi.Data.Repositories
 
         public ClientsRepository(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
             _filePath = filePath;
         }
 

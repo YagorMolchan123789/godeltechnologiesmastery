@@ -1,6 +1,6 @@
 ﻿using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
-using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Business.Exceptions;
 using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -20,8 +21,29 @@ namespace Mastery.KeeFi.Business.Services
 
         private readonly int _maxContentLength = 1048576;
 
-        public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService, IClientsService clientsService, IFileService fileService)
+        public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService,
+            IClientsService clientsService, IFileService fileService)
         {
+            if (string.IsNullOrEmpty(blobPath))
+            {
+                throw new ArgumentNullException(nameof(blobPath));  
+            }
+
+            if (documentsMetadataService == null)
+            {
+                throw new ArgumentNullException(nameof(documentsMetadataService));
+            }
+
+            if (clientsService == null)
+            {
+                throw new ArgumentNullException(nameof(clientsService));
+            }
+
+            if (fileService == null)
+            {
+                throw new ArgumentNullException(nameof(fileService));
+            }
+
             _blobPath = blobPath;
             _documentsMetadataService = documentsMetadataService;
             _clientsService = clientsService;
@@ -56,7 +78,7 @@ namespace Mastery.KeeFi.Business.Services
 
             FileStream uploadStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
             uploadStream.Write(content.ToArray(), 0, metadata.ContentLength);
-            uploadStream.Close();
+            uploadStream.Close();           
         }
 
         public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)

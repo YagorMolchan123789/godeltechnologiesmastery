@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Mastery.KeeFi.Business.Dto;
 using Mastery.KeeFi.Business.Interfaces;
-using Mastery.KeeFi.Common.Exceptions;
+using Mastery.KeeFi.Business.Exceptions;
 using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
 using System;
@@ -16,7 +16,6 @@ namespace Mastery.KeeFi.Business.Services
 {
     public class ClientsService : IClientsService
     {
-        private readonly string _filePath;
         private readonly string _blobPath;
 
         private readonly IClientsRepository _clientRepository;
@@ -29,10 +28,34 @@ namespace Mastery.KeeFi.Business.Services
         private readonly Regex _regexNumberTags = new Regex("[0-9]");
         private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
 
-        public ClientsService(string filePath, string blobPath, IClientsRepository clientsRepository,
+        public ClientsService(string blobPath, IClientsRepository clientsRepository,
             IDocumentsMetadataRepository documentsMetadataRepository, IFileService fileService, IMapper mapper)
         {
-            _filePath = filePath;
+            if (string.IsNullOrEmpty(blobPath))
+            {
+                throw new ArgumentNullException(nameof(blobPath));  
+            }
+
+            if (clientsRepository == null)
+            {
+                throw new ArgumentNullException(nameof(clientsRepository));
+            }
+
+            if (documentsMetadataRepository == null)
+            {
+                throw new ArgumentNullException(nameof(documentsMetadataRepository));
+            }
+
+            if (fileService == null)
+            {
+                throw new ArgumentNullException(nameof(fileService));
+            }
+
+            if (mapper == null)
+            {
+                throw new ArgumentNullException(nameof(mapper));
+            }
+
             _blobPath = blobPath;
             _clientRepository = clientsRepository;
             _documentMetadataRepository = documentsMetadataRepository;

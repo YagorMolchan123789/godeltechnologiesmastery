@@ -44,11 +44,11 @@ builder.Services.AddScoped<IDocumentsMetadataRepository>(d =>
 builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IDocumentsMetadataService>(d =>
-    new DocumentsMetadataService(documentPath.ToString(), d.GetRequiredService<IClientsRepository>(),
+    new DocumentsMetadataService(d.GetRequiredService<IClientsRepository>(),
     d.GetRequiredService<IDocumentsMetadataRepository>(), mapper));
 
 builder.Services.AddScoped<IClientsService>(c =>
-    new ClientsService(clientPath.ToString(), documentBlobPath.ToString(), c.GetRequiredService<IClientsRepository>(),
+    new ClientsService(documentBlobPath.ToString(), c.GetRequiredService<IClientsRepository>(),
     c.GetRequiredService<IDocumentsMetadataRepository>(), c.GetRequiredService<IFileService>(), mapper));
 
 builder.Services.AddScoped<IDocumentsContentService>(d =>
