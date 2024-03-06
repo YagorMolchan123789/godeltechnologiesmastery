@@ -19,10 +19,13 @@ namespace Mastery.KeeFi.Business.Services
         private readonly IClientsService _clientsService;
         private readonly IFileService _fileService;
 
+        private readonly ILogger<DocumentsContentService> _logger;
+
         private readonly int _maxContentLength = 1048576;
 
         public DocumentsContentService(string blobPath, IDocumentsMetadataService documentsMetadataService,
-            IClientsService clientsService, IFileService fileService)
+            IClientsService clientsService, IFileService fileService,
+            ILogger<DocumentsContentService> logger)
         {
             if (string.IsNullOrEmpty(blobPath))
             {
@@ -44,14 +47,22 @@ namespace Mastery.KeeFi.Business.Services
                 throw new ArgumentNullException(nameof(fileService));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));    
+            }
+
             _blobPath = blobPath;
             _documentsMetadataService = documentsMetadataService;
             _clientsService = clientsService;
             _fileService = fileService;
+            _logger = logger;
         }
 
         public async Task UploadDocumentAsync(int clientId, int documentId, MemoryStream content)
         {
+            _logger.LogWarning($"The file storage supports the maximal size of files in {_maxContentLength} bytes");
+
             var client = await _clientsService.GetClientAsync(clientId);
             var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
 
@@ -59,8 +70,10 @@ namespace Mastery.KeeFi.Business.Services
             string sourcePath = Path.Combine(targetDirectory, document.FileName);
 
             if (_fileService.Exists(sourcePath))
-            {
-                throw new DocumentApiValidationException($"This file {document.FileName} already exists");
+            {   
+                var exception = new DocumentApiValidationException($"This file {document.FileName} already exists");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             ValidateUpload(content);
@@ -78,11 +91,15 @@ namespace Mastery.KeeFi.Business.Services
 
             FileStream uploadStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
             uploadStream.Write(content.ToArray(), 0, metadata.ContentLength);
-            uploadStream.Close();           
+            uploadStream.Close();
+
+            _logger.LogInformation($"The file {document.FileName} is uploaded");
         }
 
         public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)
         {
+            _logger.LogWarning("The md5 hash of saved file must match md5 hash in metadata");
+
             var client = await _clientsService.GetClientAsync(clientId);
             var document = await _documentsMetadataService.GetDocumentAsync(clientId, documentId);
 
@@ -91,7 +108,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (!_fileService.Exists(targetPath))
             {
-                throw new DocumentApiEntityNotFoundException($"The file {document.FileName} does not exist");
+                var exception = new DocumentApiEntityNotFoundException($"The file {document.FileName} does not exist");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             MemoryStream content = new MemoryStream();
@@ -111,6 +130,8 @@ namespace Mastery.KeeFi.Business.Services
             metadataStream.Close();
             downloadStream.Close();
 
+            _logger.LogInformation($"The file {document.FileName} is downloaded. ClientId={clientId}. DocumentId={documentId}");
+
             ReceiveDocumentResponse receiveDocumentResponse = new(content, document);
             return receiveDocumentResponse;
         }
@@ -119,7 +140,9 @@ namespace Mastery.KeeFi.Business.Services
         {
             if (content.ToArray().Length > _maxContentLength)
             {
-                throw new DocumentApiValidationException($"The storage does not support files larger than {_maxContentLength * Math.Pow(10, -6)} M in size");
+                var exception = new DocumentApiValidationException($"The storage does not support files larger than {_maxContentLength * Math.Pow(10, -6)} M in size");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
         }
 
@@ -129,7 +152,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (md5Hash != metadata.ContentMd5)
             {
-                throw new DocumentApiValidationException("Md5 hash of the file does not match the md5 hash in metadata");
+                var exception = new DocumentApiValidationException("Md5 hash of the file does not match the md5 hash in metadata");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
         }
 

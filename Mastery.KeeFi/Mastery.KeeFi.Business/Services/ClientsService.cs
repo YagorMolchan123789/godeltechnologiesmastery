@@ -11,6 +11,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Validations;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -23,13 +25,15 @@ namespace Mastery.KeeFi.Business.Services
 
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
+        private readonly ILogger<ClientsService> _logger;
 
         private readonly Regex _regexEnglishTags = new Regex("[a-zA-Z]");
         private readonly Regex _regexNumberTags = new Regex("[0-9]");
         private readonly Regex _regexSpecialCharactersTags = new Regex("[^a-zA-Z0-9]+");
 
         public ClientsService(string blobPath, IClientsRepository clientsRepository,
-            IDocumentsMetadataRepository documentsMetadataRepository, IFileService fileService, IMapper mapper)
+            IDocumentsMetadataRepository documentsMetadataRepository, IFileService fileService, 
+            ILogger<ClientsService> logger, IMapper mapper)
         {
             if (string.IsNullOrEmpty(blobPath))
             {
@@ -51,6 +55,11 @@ namespace Mastery.KeeFi.Business.Services
                 throw new ArgumentNullException(nameof(fileService));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (mapper == null)
             {
                 throw new ArgumentNullException(nameof(mapper));
@@ -60,6 +69,7 @@ namespace Mastery.KeeFi.Business.Services
             _clientRepository = clientsRepository;
             _documentMetadataRepository = documentsMetadataRepository;
             _fileService = fileService;
+            _logger = logger;
             _mapper = mapper;
         }
 
@@ -76,6 +86,8 @@ namespace Mastery.KeeFi.Business.Services
             _clientRepository.Add(client);
             _clientRepository.SaveChanges();
 
+            _logger.LogInformation($"The client with Id = {client.Id}  has been successfully created");
+
             return client;
         }
 
@@ -85,7 +97,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (client == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             var documents =  _documentMetadataRepository.GetDocuments(clientId, null, null);
@@ -98,6 +112,7 @@ namespace Mastery.KeeFi.Business.Services
                 }
 
                 _documentMetadataRepository.SaveChanges();
+                _logger.LogDebug($"All the documents of the client with Id={clientId} have been removed");
             }
 
             string targetPath = Path.Combine(_blobPath, client.Id.ToString());
@@ -105,6 +120,8 @@ namespace Mastery.KeeFi.Business.Services
 
             _clientRepository.Remove(client);
             _clientRepository.SaveChanges();
+
+            _logger.LogInformation($"The client with Id={clientId} has been successfully removed");
         }
 
         public async Task<ClientDto> GetClientAsync(int clientId)
@@ -113,7 +130,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (client == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             var clientDTO = _mapper.Map<ClientDto>(client);
@@ -125,23 +144,31 @@ namespace Mastery.KeeFi.Business.Services
         {
             if (skip < 0)
             {
-                throw new DocumentApiValidationException("Skip must be more than 0");
+                var exception = new DocumentApiValidationException("Skip must be more than 0");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
             if (take < 0)
             {
-                throw new DocumentApiValidationException("Take must be more than 0");
+                var exception = new DocumentApiValidationException("Take must be more than 0");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             var allCLients = _clientRepository.GetAll();
             
             if (take > allCLients?.Count())
             {
-                throw new DocumentApiValidationException("Take is more than count of the clients");
+                var exception = new DocumentApiValidationException("Take is more than count of the clients");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             if (!allCLients.Any())
             {
-                throw new DocumentApiEntityNotFoundException("There are no clients");
+                var exception = new DocumentApiEntityNotFoundException("There are no clients");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             if (tags.Any())
@@ -161,7 +188,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (client == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
 
             Validate(clientDto);
@@ -176,6 +205,8 @@ namespace Mastery.KeeFi.Business.Services
             _clientRepository.Update(client);
             _clientRepository.SaveChanges();
 
+            _logger.LogInformation($"The client with Id = {clientId} has been successfully updated");
+
             return client;
         }
 
@@ -183,7 +214,7 @@ namespace Mastery.KeeFi.Business.Services
         {
             List<string> exceptionMessages = new List<string>();
 
-            if (String.IsNullOrEmpty(clientDto?.FirstName))
+            if (string.IsNullOrEmpty(clientDto?.FirstName))
             {
                 exceptionMessages.Add("Please, fill the FirstName out");
             }
@@ -192,7 +223,7 @@ namespace Mastery.KeeFi.Business.Services
                 exceptionMessages.Add("The length of FirstName must be not more than 50 symbols");
             }
 
-            if (String.IsNullOrEmpty(clientDto?.LastName))
+            if (string.IsNullOrEmpty(clientDto?.LastName))
             {
                 exceptionMessages.Add("Please, fill the LastName out");
             }
@@ -203,7 +234,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (!clientDto.DateOfBirth.HasValue)
             {
-                throw new DocumentApiValidationException("Please, fill the DateOfBirth out");
+                var exception = new DocumentApiValidationException("Please, fill the DateOfBirth out");
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
             if (GetAge(clientDto) > 130)
             {
@@ -222,7 +255,9 @@ namespace Mastery.KeeFi.Business.Services
             if (exceptionMessages.Any())
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
-                throw new DocumentApiValidationException(exceptionMessage);
+                var exception = new DocumentApiValidationException(exceptionMessage);
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
         }
 
@@ -264,7 +299,9 @@ namespace Mastery.KeeFi.Business.Services
             if (exceptionMessages.Any() && isTagsValidation)
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
-                throw new DocumentApiValidationException(exceptionMessage);
+                var exception = new DocumentApiValidationException(exceptionMessage);
+                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                throw exception;
             }
         }
 
