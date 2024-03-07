@@ -8,6 +8,10 @@ using Mastery.KeeFi.Business.Services;
 using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Data.Repositories;
 using Mastery.KeeFi.Domain.Entities;
+using NLog.Web;
+using NLog;
+using NLog.Extensions.Logging;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
+LogManager.Configuration = new NLogLoggingConfiguration(builder.Configuration.GetSection("NLog"));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -45,15 +54,18 @@ builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddScoped<IDocumentsMetadataService>(d =>
     new DocumentsMetadataService(d.GetRequiredService<IClientsRepository>(),
-    d.GetRequiredService<IDocumentsMetadataRepository>(), mapper));
+    d.GetRequiredService<IDocumentsMetadataRepository>(), mapper,
+    d.GetRequiredService<ILogger<DocumentsMetadataService>>()));
 
 builder.Services.AddScoped<IClientsService>(c =>
     new ClientsService(documentBlobPath.ToString(), c.GetRequiredService<IClientsRepository>(),
-    c.GetRequiredService<IDocumentsMetadataRepository>(), c.GetRequiredService<IFileService>(), mapper));
+    c.GetRequiredService<IDocumentsMetadataRepository>(), c.GetRequiredService<IFileService>(),
+    c.GetRequiredService<ILogger<ClientsService>>(), mapper));
 
 builder.Services.AddScoped<IDocumentsContentService>(d =>
     new DocumentsContentService(documentBlobPath.ToString(), d.GetRequiredService<IDocumentsMetadataService>(),
-    d.GetRequiredService<IClientsService>(), d.GetRequiredService<IFileService>()));
+    d.GetRequiredService<IClientsService>(), d.GetRequiredService<IFileService>(),
+    d.GetRequiredService<ILogger<DocumentsContentService>>()));
 
 // Register and configure Swagger generator services
 builder.Services.AddSwaggerGen(c =>
@@ -109,10 +121,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("v1/swagger.json", "v1");
     });
 }
-
-//app.UseHttpsRedirection();
-
-//app.UseAuthorization();
 
 app.MapControllers();
 

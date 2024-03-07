@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -34,9 +35,11 @@ namespace Mastery.KeeFi.Business.Services
         private readonly IClientsRepository _clientsRepository;
         private readonly IDocumentsMetadataRepository _documentsMetadataRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<DocumentsMetadataService> _logger;
 
         public DocumentsMetadataService(IClientsRepository clientsRepository,
-            IDocumentsMetadataRepository documentsMetadataRepository, IMapper mapper)
+            IDocumentsMetadataRepository documentsMetadataRepository, IMapper mapper,
+            ILogger<DocumentsMetadataService> logger)
         {
             if (clientsRepository == null)
             {
@@ -52,10 +55,16 @@ namespace Mastery.KeeFi.Business.Services
             {
                 throw new ArgumentNullException(nameof(mapper));
             }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
             
             _clientsRepository = clientsRepository;
             _documentsMetadataRepository = documentsMetadataRepository;
             _mapper = mapper;
+            _logger = logger;            
         }
 
         public async Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadataDto documentMetadataDto)
@@ -70,7 +79,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (client == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             documentMetadata.Id = (documents?.Count() == 0) ? 1 : documents.Max(d => d.Id) + 1;
@@ -78,6 +89,8 @@ namespace Mastery.KeeFi.Business.Services
            
             _documentsMetadataRepository.Add(documentMetadata);
             _documentsMetadataRepository.SaveChanges();
+
+            _logger.LogInformation($"The document with Id={documentMetadata.Id} and ClientId={clientId} has been successfully created");
 
             return documentMetadata;
         }
@@ -88,11 +101,15 @@ namespace Mastery.KeeFi.Business.Services
 
             if (document == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
+                var exception =new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             _documentsMetadataRepository.Remove(document);
             _documentsMetadataRepository.SaveChanges();
+
+            _logger.LogInformation($"The document with Id={documentId} and ClientId={clientId} has been successfully removed");
         }
 
         public async Task<DocumentMetadataDto> GetDocumentAsync(int clientId, int documentId)
@@ -101,14 +118,18 @@ namespace Mastery.KeeFi.Business.Services
 
             if (client == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The client with Id={clientId} may be deleted");
+                var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} may be deleted");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             var document = _documentsMetadataRepository.GetDocument(clientId, documentId);
 
             if (document == null)
             {
-                throw new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
+                var exception = new DocumentApiEntityNotFoundException($"The document with Id={documentId} and ClientId={clientId} is not found");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             var documentDTO = _mapper.Map<DocumentMetadataDto>(document);   
@@ -120,25 +141,33 @@ namespace Mastery.KeeFi.Business.Services
         {
             if (skip < 0)
             {
-                throw new DocumentApiValidationException("Skip must be more than 0");
+                var exception = new DocumentApiValidationException("Skip must be more than 0");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
             if (take < 0)
             {
-                throw new DocumentApiValidationException("Take must be more than 0");
+                var exception = new DocumentApiValidationException("Take must be more than 0");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             var deserializedDocuments = _documentsMetadataRepository.GetAll();
 
             if (take > deserializedDocuments?.Count())
             {
-                throw new DocumentApiValidationException("Take is more than count of the documents");
+                var exception = new DocumentApiValidationException("Take is more than count of the documents");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             var documents = _documentsMetadataRepository.GetDocuments(clientId, skip, take);
 
             if (documents?.Any() == false)
             {
-                throw new DocumentApiEntityNotFoundException($"There are no documents that blong to the client with Id={clientId}");
+                var exception = new DocumentApiEntityNotFoundException($"There are no documents that blong to the client with Id={clientId}");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             var documentDTOs = _mapper.Map<List<DocumentMetadataDto>>(documents);
@@ -152,7 +181,9 @@ namespace Mastery.KeeFi.Business.Services
 
             if (document == null)
             {
-                throw new DocumentApiEntityNotFoundException($"Document not found id = {documentId}  clientId={clientId}");
+                var exception = new DocumentApiEntityNotFoundException($"Document not found id = {documentId}  clientId={clientId}");
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
 
             Validate(documentMetadataDto);
@@ -167,6 +198,8 @@ namespace Mastery.KeeFi.Business.Services
 
             _documentsMetadataRepository.Update(document);
             _documentsMetadataRepository.SaveChanges();
+
+            _logger.LogInformation($"The document with ClientId={clientId} and Id={documentId} has been successfully updated");
 
             return document;
         }
@@ -261,7 +294,9 @@ namespace Mastery.KeeFi.Business.Services
             if (exceptionMessages.Any())
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
-                throw new DocumentApiValidationException(exceptionMessage);
+                var exception = new DocumentApiValidationException(exceptionMessage);
+                _logger.LogError(exception, exception.Message);
+                throw exception;
             }
         }
     }
