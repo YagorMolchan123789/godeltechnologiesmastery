@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NLog;
-using Mastery.KeeFi.Business.Extensions;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -72,10 +71,8 @@ namespace Mastery.KeeFi.Business.Services
             if (_fileService.Exists(sourcePath))
             {   
                 var exception = new DocumentApiValidationException($"This file {document.FileName} already exists");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception,logMessage);
-                throw exception;
+                _logger.LogError(exception, exception.Message);
+                throw exception;                
             }
 
             ValidateUpload(content);
@@ -96,7 +93,6 @@ namespace Mastery.KeeFi.Business.Services
             uploadStream.Close();
 
             _logger.LogInformation($"The file {document.FileName} is uploaded");
-            //_logger.LogInformation($"The file {document.FileName} is uploaded");
         }
 
         public async Task<ReceiveDocumentResponse> ReceiveDocumentAsync(int clientId, int documentId)
@@ -110,9 +106,7 @@ namespace Mastery.KeeFi.Business.Services
             if (!_fileService.Exists(targetPath))
             {
                 var exception = new DocumentApiEntityNotFoundException($"The file {document.FileName} does not exist");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
@@ -144,9 +138,7 @@ namespace Mastery.KeeFi.Business.Services
             if (content.ToArray().Length > _maxContentLength)
             {
                 var exception = new DocumentApiValidationException($"The storage does not support files larger than {_maxContentLength * Math.Pow(10, -6)} M in size");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
         }
@@ -158,9 +150,7 @@ namespace Mastery.KeeFi.Business.Services
             if (md5Hash != metadata.ContentMd5)
             {
                 var exception = new DocumentApiValidationException("Md5 hash of the file does not match the md5 hash in metadata");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
         }

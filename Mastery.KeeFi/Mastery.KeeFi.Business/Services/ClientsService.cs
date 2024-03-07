@@ -13,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Validations;
-using Mastery.KeeFi.Business.Extensions;
 using NLog;
 
 namespace Mastery.KeeFi.Business.Services
@@ -100,9 +99,7 @@ namespace Mastery.KeeFi.Business.Services
             if (client == null)
             {
                 var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
@@ -135,9 +132,7 @@ namespace Mastery.KeeFi.Business.Services
             if (client == null)
             {
                 var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
@@ -151,17 +146,13 @@ namespace Mastery.KeeFi.Business.Services
             if (skip < 0)
             {
                 var exception = new DocumentApiValidationException("Skip must be more than 0");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
             if (take < 0)
             {
                 var exception = new DocumentApiValidationException("Take must be more than 0");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
@@ -170,18 +161,14 @@ namespace Mastery.KeeFi.Business.Services
             if (take > allCLients?.Count())
             {
                 var exception = new DocumentApiValidationException("Take is more than count of the clients");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
             if (!allCLients.Any())
             {
                 var exception = new DocumentApiEntityNotFoundException("There are no clients");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
@@ -203,9 +190,7 @@ namespace Mastery.KeeFi.Business.Services
             if (client == null)
             {
                 var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
 
@@ -251,9 +236,7 @@ namespace Mastery.KeeFi.Business.Services
             if (!clientDto.DateOfBirth.HasValue)
             {
                 var exception = new DocumentApiValidationException("Please, fill the DateOfBirth out");
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
             if (GetAge(clientDto) > 130)
@@ -274,9 +257,7 @@ namespace Mastery.KeeFi.Business.Services
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 var exception = new DocumentApiValidationException(exceptionMessage);
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
         }
@@ -320,9 +301,7 @@ namespace Mastery.KeeFi.Business.Services
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 var exception = new DocumentApiValidationException(exceptionMessage);
-                var stackTrace = Environment.StackTrace.GetString();
-                var logMessage = string.Concat("  StackTrace: ", stackTrace);
-                _logger.LogError(exception, logMessage);
+                _logger.LogError(exception, exception.Message);
                 throw exception;
             }
         }
