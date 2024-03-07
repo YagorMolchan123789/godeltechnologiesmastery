@@ -10,6 +10,8 @@ using Mastery.KeeFi.Data.Repositories;
 using Mastery.KeeFi.Domain.Entities;
 using NLog.Web;
 using NLog;
+using NLog.Extensions.Logging;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,8 @@ builder.Services.AddProblemDetails();
 
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
+
+LogManager.Configuration = new NLogLoggingConfiguration(builder.Configuration.GetSection("NLog"));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -117,10 +121,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("v1/swagger.json", "v1");
     });
 }
-
-//app.UseHttpsRedirection();
-
-//app.UseAuthorization();
 
 app.MapControllers();
 

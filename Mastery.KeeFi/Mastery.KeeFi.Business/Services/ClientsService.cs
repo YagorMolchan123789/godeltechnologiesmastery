@@ -13,6 +13,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Validations;
+using Mastery.KeeFi.Business.Extensions;
+using NLog;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -98,7 +100,9 @@ namespace Mastery.KeeFi.Business.Services
             if (client == null)
             {
                 var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
 
@@ -112,7 +116,7 @@ namespace Mastery.KeeFi.Business.Services
                 }
 
                 _documentMetadataRepository.SaveChanges();
-                _logger.LogDebug($"All the documents of the client with Id={clientId} have been removed");
+                _logger.LogInformation($"All the documents of the client with Id={clientId} have been removed");
             }
 
             string targetPath = Path.Combine(_blobPath, client.Id.ToString());
@@ -131,7 +135,9 @@ namespace Mastery.KeeFi.Business.Services
             if (client == null)
             {
                 var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
 
@@ -145,13 +151,17 @@ namespace Mastery.KeeFi.Business.Services
             if (skip < 0)
             {
                 var exception = new DocumentApiValidationException("Skip must be more than 0");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
             if (take < 0)
             {
                 var exception = new DocumentApiValidationException("Take must be more than 0");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
 
@@ -160,14 +170,18 @@ namespace Mastery.KeeFi.Business.Services
             if (take > allCLients?.Count())
             {
                 var exception = new DocumentApiValidationException("Take is more than count of the clients");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
 
             if (!allCLients.Any())
             {
                 var exception = new DocumentApiEntityNotFoundException("There are no clients");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
 
@@ -189,7 +203,9 @@ namespace Mastery.KeeFi.Business.Services
             if (client == null)
             {
                 var exception = new DocumentApiEntityNotFoundException($"The client with Id={clientId} is not found");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
 
@@ -235,7 +251,9 @@ namespace Mastery.KeeFi.Business.Services
             if (!clientDto.DateOfBirth.HasValue)
             {
                 var exception = new DocumentApiValidationException("Please, fill the DateOfBirth out");
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
             if (GetAge(clientDto) > 130)
@@ -256,7 +274,9 @@ namespace Mastery.KeeFi.Business.Services
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 var exception = new DocumentApiValidationException(exceptionMessage);
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
         }
@@ -300,7 +320,9 @@ namespace Mastery.KeeFi.Business.Services
             {
                 string exceptionMessage = string.Join(". ", exceptionMessages);
                 var exception = new DocumentApiValidationException(exceptionMessage);
-                _logger.LogError(exception, exception.Message, exception.StackTrace);
+                var stackTrace = Environment.StackTrace.GetString();
+                var logMessage = string.Concat("  StackTrace: ", stackTrace);
+                _logger.LogError(exception, logMessage);
                 throw exception;
             }
         }
