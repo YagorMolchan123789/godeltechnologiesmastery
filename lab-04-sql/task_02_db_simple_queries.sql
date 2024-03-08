@@ -72,6 +72,7 @@ SELECT
 	 E.rowguid AS [rowguid],
 	 E.ModifiedDate AS [ModifiedDate]
 FROM HumanResources.Employee AS E
+WHERE MONTH(E.HireDate)=3 AND DAY(E.HireDate)=5
 ORDER BY E.BusinessEntityID
 OFFSET 1 ROWS FETCH NEXT 5 ROWS ONLY
 
@@ -94,7 +95,7 @@ SELECT
 	 E.rowguid AS [rowguid],
 	 E.ModifiedDate AS [ModifiedDate]
 FROM HumanResources.Employee as E
-WHERE DAY(E.HireDate)=3 AND E.Gender='F'
+WHERE DATENAME(WEEKDAY,E.HireDate)='Wednesday' AND E.Gender='F'
 	
 --(6)
 SELECT
