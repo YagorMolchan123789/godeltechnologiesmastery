@@ -88,10 +88,10 @@ FROM HumanResources.Employee AS E
 GROUP BY E.BusinessEntityID, P.BusinessEntityID
 
 --(6) DONE
-SELECT 
-	S.EmployeeId AS [EmployeeId],
-	S.DepartmentId AS [DepartmentId],
-	S.Rate AS [MaxInDepartment]
+SELECT DISTINCT
+	D.DepartmentId AS [DepartmentId],
+	T.EmployeeId AS [EmployeeId],
+	D.Rate AS [MaxInDepartment]
 FROM (
 	SELECT
 		E.BusinessEntityID AS [EmployeeId],
@@ -101,8 +101,24 @@ FROM (
 		INNER JOIN HumanResources.EmployeePayHistory AS PH ON PH.BusinessEntityID=E.BusinessEntityID
 		INNER JOIN HumanResources.EmployeeDepartmentHistory AS DH ON DH.BusinessEntityID=E.BusinessEntityID
 	GROUP BY E.BusinessEntityID, DH.DepartmentID, PH.BusinessEntityID
-) AS S
-ORDER BY S.DepartmentId, S.Rate
+) AS D CROSS APPLY(
+	SELECT 
+		S.EmployeeId AS [EmployeeId],
+		S.DepartmentId AS [DepartmentId],
+		S.Rate AS [MaxInDepartment]
+	FROM (
+		SELECT
+			E.BusinessEntityID AS [EmployeeId],
+			DH.DepartmentID AS [DepartmentId],
+			MAX(PH.Rate) AS [Rate]
+		FROM HumanResources.Employee AS E
+			INNER JOIN HumanResources.EmployeePayHistory AS PH ON PH.BusinessEntityID=E.BusinessEntityID
+			INNER JOIN HumanResources.EmployeeDepartmentHistory AS DH ON DH.BusinessEntityID=E.BusinessEntityID
+		GROUP BY E.BusinessEntityID, DH.DepartmentID, PH.BusinessEntityID
+	) AS S
+	WHERE S.DepartmentId= D.DepartmentId AND S.Rate=D.Rate
+) AS T
+GROUP BY D.DepartmentId, D.Rate, T.EmployeeId
 
 --(7) DONE
 SELECT
@@ -121,7 +137,8 @@ SELECT
 	E.SickLeaveHours AS [SickLeaveHours],
 	E.CurrentFlag AS [CurrentFlag],
 	E.rowguid AS [rowguid],
-	E.ModifiedDate AS [ModifiedDate]
+	E.ModifiedDate AS [ModifiedDate], 
+	S.Name AS [ShiftName]
 FROM HumanResources.Employee AS E
 	INNER JOIN HumanResources.EmployeeDepartmentHistory AS H ON H.BusinessEntityID=E.BusinessEntityID
 	INNER JOIN HumanResources.Shift AS S ON S.ShiftID=H.ShiftID
@@ -131,10 +148,8 @@ WHERE S.Name='Evening'
 SELECT
 	E.BusinessEntityID AS [EmployeeId],
 	H.DepartmentID AS [DepartmentId],
+	H.StartDate AS [StartDate],
+	H.EndDate AS [EndDate],
 	IIF(H.EndDate IS NOT NULL, FLOOR(DATEDIFF(DAY, H.StartDate,H.EndDate)/365), FLOOR(DATEDIFF(DAY, H.StartDate, GETDATE())/365)) AS [Experience]
 FROM HumanResources.Employee AS E
 	INNER JOIN HumanResources.EmployeeDepartmentHistory AS H ON H.BusinessEntityID=E.BusinessEntityID
-
-
-
-
