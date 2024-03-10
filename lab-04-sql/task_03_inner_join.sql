@@ -106,7 +106,7 @@ ORDER BY S.DepartmentId, S.Rate
 
 --(7) DONE
 SELECT
-	E.BusinessEntityID AS [Id],
+	E.BusinessEntityID AS [EmployeeId],
 	E.NationalIDNumber AS [NationalNumber],
 	E.LoginID AS [LoginId],
 	E.OrganizationNode AS [OrganizationNode],
