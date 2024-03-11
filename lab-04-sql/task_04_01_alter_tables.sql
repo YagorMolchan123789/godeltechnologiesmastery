@@ -22,7 +22,7 @@ PRIMARY KEY
 
 --(3)
 ALTER TABLE Person
-ADD CONSTRAINT CK_Person_MiddleName_equal_to_J_or_L CHECK(MiddleName='J' OR MiddleName='L')
+ADD CONSTRAINT CK_Person_MiddleName_equal_to_J_or_L CHECK(MiddleName IN ('J', 'L'))
 
 --(4)
 ALTER TABLE Person
@@ -47,4 +47,4 @@ WHERE E.JobTitle  NOT LIKE '%Finance%' AND P.MiddleName IN ('J','L')
 
 --(6)
 ALTER TABLE Person
-ALTER COLUMN Title NVARCHAR(6) NULL
+ALTER COLUMN Title NVARCHAR(6)
