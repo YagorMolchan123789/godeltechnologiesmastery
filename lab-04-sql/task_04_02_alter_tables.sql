@@ -1,19 +1,12 @@
-USE AdventureWorks2017 EXEC sp_changedbowner 'sa'
-
 --(1)
 CREATE TABLE StateProvince
 (
-	StateProvinceID INT IDENTITY(1,1) NOT NULL
-		CONSTRAINT PK_StateProvince_StateProvinceID PRIMARY KEY,
+	StateProvinceID INT NOT NULL,
 	StateProvinceCode NCHAR(3) NOT NULL,
-	CountryRegionCode NVARCHAR(3) NOT NULL 
-		CONSTRAINT FK_StateProvince_CountryRegion_CountryRegionCode
-		FOREIGN KEY REFERENCES Person.CountryRegion(CountryRegionCode),
+	CountryRegionCode NVARCHAR(3) NOT NULL,
 	IsOnlyStateProvinceFlag FLAG NOT NULL,
 	Name NAME NOT NULL,
-	TerritoryID INT NOT NULL
-		CONSTRAINT FK_StateProvince_SalesTerritory_TerritoryID
-		FOREIGN KEY REFERENCES Sales.SalesTerritory(TerritoryID),
+	TerritoryID INT NOT NULL,
 	ModifiedDate DATETIME NOT NULL
 )
 
@@ -32,6 +25,7 @@ ADD CONSTRAINT DF_StateProvince_ModifiedDate DEFAULT GETDATE() FOR ModifiedDate
 --(5)
 INSERT INTO StateProvince
 SELECT
+    S.StateProvinceID AS [StateProvinceID],
 	S.StateProvinceCode AS [StateProvinceCode],
 	S.CountryRegionCode AS [CountryRegionCode],
 	S.IsOnlyStateProvinceFlag AS [IsOnlyStateProvinceFlag],
