@@ -22,7 +22,7 @@ PRIMARY KEY
 
 --(3)
 ALTER TABLE Person
-ADD CONSTRAINT CK_Person_MiddleName_equal_to_J_or_L CHECK(MiddleName IN ('J', 'L'))
+ADD CONSTRAINT CK_Person_MiddleName CHECK(MiddleName IN ('J', 'L'))
 
 --(4)
 ALTER TABLE Person
