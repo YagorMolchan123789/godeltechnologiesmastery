@@ -33,34 +33,19 @@ GROUP BY P.Rate
 --(3) DONE
 SELECT
 	E.BusinessEntityID AS [EmployeeId],
-	E.NationalIDNumber AS [NationalNumber],
-	E.LoginID AS [LoginId],
-	E.OrganizationNode AS [OrganizationNode],
-	E.OrganizationLevel AS [OrganizationLevel],
-	E.JobTitle AS [JobTitle],
-	E.BirthDate AS [BirthDate],
-	E.MaritalStatus AS [MaritalStatus],
-	E.Gender AS [Gender],
-	E.HireDate AS [HireDate],
-	E.SalariedFlag AS [SalariedFlag],
-	E.VacationHours AS [VacationHours],
-	E.SickLeaveHours AS [SickLeaveHours],
-	E.CurrentFlag AS [CurrentFlag],
-	E.rowguid AS [rowguid],
-	E.ModifiedDate AS [ModifiedDate]
-FROM HumanResources.Employee AS E CROSS APPLY(
-	SELECT 
-		H.BusinessEntityID AS [BusinessEntityId],
-		COUNT(H.BusinessEntityID) AS [DepartmentCount]
-	FROM HumanResources.EmployeeDepartmentHistory AS H
-	GROUP BY H.BusinessEntityID
-	HAVING H.BusinessEntityID=E.BusinessEntityID
-) AS D
+	DH.DepartmentID AS [DepartmentId],
+	DH.StartDate AS [StartDate],
+	DH.EndDate AS [EndDate]
+FROM HumanResources.Employee AS E
 	INNER JOIN HumanResources.EmployeePayHistory AS PH ON PH.BusinessEntityID=E.BusinessEntityID
 	INNER JOIN HumanResources.EmployeeDepartmentHistory AS DH ON DH.BusinessEntityID=PH.BusinessEntityID
-GROUP BY E.BusinessEntityID, E.NationalIDNumber, E.LoginID, E.OrganizationNode, E.OrganizationLevel, E.JobTitle,
-	E.BirthDate, E.MaritalStatus, E.Gender, E.HireDate, E.SalariedFlag, E.VacationHours, E.SickLeaveHours, E.CurrentFlag, E.rowguid,
-	E.ModifiedDate, DH.DepartmentID, DH.StartDate, DH.EndDate, D.BusinessEntityId, D.DepartmentCount
+	INNER JOIN (
+		SELECT 
+			H.BusinessEntityID AS [BusinessEntityId],
+			COUNT(H.BusinessEntityID) OVER (PARTITION BY H.BusinessEntityID) AS [DepartmentCount]
+		FROM HumanResources.EmployeeDepartmentHistory AS H
+	) AS D ON D.BusinessEntityId=E.BusinessEntityID
+GROUP BY E.BusinessEntityID, DH.DepartmentID, DH.StartDate, DH.EndDate, D.DepartmentCount
 HAVING COUNT(PH.Rate)>1 AND D.DepartmentCount=1 AND DH.EndDate IS NULL
 
 --(4) DONE
@@ -88,37 +73,30 @@ FROM HumanResources.Employee AS E
 GROUP BY E.BusinessEntityID, P.BusinessEntityID
 
 --(6) DONE
-SELECT DISTINCT
+SELECT
 	D.DepartmentId AS [DepartmentId],
-	T.EmployeeId AS [EmployeeId],
+	ET.EmployeeId AS [EmployeeId],
 	D.Rate AS [MaxInDepartment]
 FROM (
 	SELECT
 		E.BusinessEntityID AS [EmployeeId],
 		DH.DepartmentID AS [DepartmentId],
-		MAX(PH.Rate) AS [Rate]
+		MAX(PH.Rate) OVER (PARTITION BY E.BusinessEntityID) AS [Rate]
 	FROM HumanResources.Employee AS E
 		INNER JOIN HumanResources.EmployeePayHistory AS PH ON PH.BusinessEntityID=E.BusinessEntityID
 		INNER JOIN HumanResources.EmployeeDepartmentHistory AS DH ON DH.BusinessEntityID=E.BusinessEntityID
-	GROUP BY E.BusinessEntityID, DH.DepartmentID, PH.BusinessEntityID
-) AS D CROSS APPLY(
-	SELECT 
-		S.EmployeeId AS [EmployeeId],
-		S.DepartmentId AS [DepartmentId],
-		S.Rate AS [MaxInDepartment]
-	FROM (
+) AS D
+	INNER JOIN (
 		SELECT
 			E.BusinessEntityID AS [EmployeeId],
 			DH.DepartmentID AS [DepartmentId],
-			MAX(PH.Rate) AS [Rate]
+			MAX(PH.Rate) OVER (PARTITION BY E.BusinessEntityID) AS [Rate]
 		FROM HumanResources.Employee AS E
 			INNER JOIN HumanResources.EmployeePayHistory AS PH ON PH.BusinessEntityID=E.BusinessEntityID
 			INNER JOIN HumanResources.EmployeeDepartmentHistory AS DH ON DH.BusinessEntityID=E.BusinessEntityID
-		GROUP BY E.BusinessEntityID, DH.DepartmentID, PH.BusinessEntityID
-	) AS S
-	WHERE S.DepartmentId= D.DepartmentId AND S.Rate=D.Rate
-) AS T
-GROUP BY D.DepartmentId, D.Rate, T.EmployeeId
+	) AS ET ON ET.DepartmentId=D.DepartmentId
+WHERE ET.Rate=D.Rate
+GROUP BY D.DepartmentId, D.Rate, ET.EmployeeId
 
 --(7) DONE
 SELECT
