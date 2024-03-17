@@ -22,7 +22,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddProblemDetails();
 
-builder.Services.AddDbContext<KeeFiDbContext>(options =>
+builder.Services.AddDbContext<MainDbContext>(options =>
     options.UseSqlServer(builder.Configuration["ConnectionStings:DefaultConnection"]));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -44,8 +44,17 @@ builder.Services.AddSingleton(mapper);
 
 builder.Services.AddScoped<IFileService, FileService>();
 
+builder.Services.AddScoped<IRepository<Client>>(g =>
+    new Repository<Client>(g.GetRequiredService<MainDbContext>()));
+
+builder.Services.AddScoped<IRepository<DocumentMetadata>>(g =>
+    new Repository<DocumentMetadata>(g.GetRequiredService<MainDbContext>()));
+
+builder.Services.AddScoped<IClientsRepository, ClientsRepository>();
+builder.Services.AddScoped<IDocumentsMetadataRepository, DocumentsMetadataRepository>();
+
 builder.Services.AddScoped<IUnitOfWork>(d =>
- new UnitOfWork(d.GetRequiredService<KeeFiDbContext>()));
+ new UnitOfWork(d.GetRequiredService<MainDbContext>()));
 
 builder.Services.AddScoped<IDocumentsMetadataService>(d =>
     new DocumentsMetadataService(d.GetRequiredService<IUnitOfWork>(), mapper));
@@ -77,7 +86,7 @@ WebApplication app = builder.Build();
 
 using var scope = app.Services.CreateScope();
 
-var dbContext = scope.ServiceProvider.GetRequiredService<KeeFiDbContext>();
+var dbContext = scope.ServiceProvider.GetRequiredService<MainDbContext>();
 dbContext.Database.Migrate();
 
 var fileService = scope.ServiceProvider.GetRequiredService<IFileService>();

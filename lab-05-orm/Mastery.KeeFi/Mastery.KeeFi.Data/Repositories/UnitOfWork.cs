@@ -1,4 +1,5 @@
 ﻿using Mastery.KeeFi.Data.Interfaces;
+using Mastery.KeeFi.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace Mastery.KeeFi.Data.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly KeeFiDbContext _context;
+        private readonly MainDbContext _context;
 
-        public UnitOfWork(KeeFiDbContext context)
+        public UnitOfWork(MainDbContext context)
         {
             if (context == null)
             {
@@ -22,8 +23,8 @@ namespace Mastery.KeeFi.Data.Repositories
         }
 
         private IClientsRepository _clientsRepository;
-
-        public IClientsRepository ClientsRepository
+        
+        public IClientsRepository Clients
         {
             get
             {
@@ -37,7 +38,8 @@ namespace Mastery.KeeFi.Data.Repositories
         }
 
         private IDocumentsMetadataRepository _documentsMetadataRepository;
-        public IDocumentsMetadataRepository DocumentsMetadataRepository
+
+        public IDocumentsMetadataRepository Documents
         {
             get
             {
@@ -53,6 +55,11 @@ namespace Mastery.KeeFi.Data.Repositories
         public void SaveChanges()
         {
             _context.SaveChanges();
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
         }
     }
 }

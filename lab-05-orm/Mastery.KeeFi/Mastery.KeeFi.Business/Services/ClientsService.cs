@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Validations;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -63,7 +64,7 @@ namespace Mastery.KeeFi.Business.Services
 
             var client = _mapper.Map<Client>(clientDto);
 
-            _unitOfWork.ClientsRepository.Add(client);
+            _unitOfWork.Clients.Add(client);
             _unitOfWork.SaveChanges();
 
             return client;
@@ -71,7 +72,7 @@ namespace Mastery.KeeFi.Business.Services
 
         public async Task DeleteClientAsync(int clientId)
         {
-            var client = _unitOfWork.ClientsRepository.GetClient(clientId);
+            var client = _unitOfWork.Clients.Get(clientId);
 
             if (client == null)
             {
@@ -82,13 +83,13 @@ namespace Mastery.KeeFi.Business.Services
             string targetPath = Path.Combine(_blobPath, client.Id.ToString());
             _fileService.DeleteDirectory(targetPath);
 
-            _unitOfWork.ClientsRepository.Remove(client);
+            _unitOfWork.Clients.Remove(client);
             _unitOfWork.SaveChanges();
         }
 
         public async Task<ClientDto> GetClientAsync(int clientId)
         {
-            var client = _unitOfWork.ClientsRepository.GetClient(clientId);
+            var client = _unitOfWork.Clients.Get(clientId);
 
             if (client == null)
             {
@@ -114,7 +115,7 @@ namespace Mastery.KeeFi.Business.Services
                 throw exception;
             }
 
-            var allCLients = _unitOfWork.ClientsRepository.Clients;
+            var allCLients = _unitOfWork.Clients.GetClients(null, null, null);
             
             if (take > allCLients?.Count())
             {
@@ -133,7 +134,7 @@ namespace Mastery.KeeFi.Business.Services
                 Validate(tags);
             }
 
-            var clients = _unitOfWork.ClientsRepository.GetClients(skip, take, tags);
+            var clients = _unitOfWork.Clients.GetClients(skip, take, tags);
             var clientDTOs = _mapper.Map<List<ClientDto>>(clients);
 
             return clientDTOs;
@@ -141,7 +142,7 @@ namespace Mastery.KeeFi.Business.Services
 
         public async Task<Client> UpdateClientAsync(int clientId, ClientDto clientDto)
         {
-            var client = _unitOfWork.ClientsRepository.GetClient(clientId);
+            var client = _unitOfWork.Clients.Get(clientId);
 
             if (client == null)
             {
@@ -156,7 +157,7 @@ namespace Mastery.KeeFi.Business.Services
             client.DateOfBirth = clientDto.DateOfBirth;
             client.Tags = clientDto.Tags;
 
-            _unitOfWork.ClientsRepository.Update(client);
+            _unitOfWork.Clients.Update(client);
             _unitOfWork.SaveChanges();
 
             return client;

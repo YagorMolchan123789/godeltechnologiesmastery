@@ -1,5 +1,6 @@
 ﻿using Mastery.KeeFi.Data.Interfaces;
 using Mastery.KeeFi.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,41 +10,22 @@ using System.Threading.Tasks;
 
 namespace Mastery.KeeFi.Data.Repositories
 {
-    public class DocumentsMetadataRepository : IDocumentsMetadataRepository
+    public class DocumentsMetadataRepository : Repository<DocumentMetadata>, IDocumentsMetadataRepository
     {
-        private KeeFiDbContext _context;
-
-        public DocumentsMetadataRepository(KeeFiDbContext context)
+        public DocumentsMetadataRepository(MainDbContext context) : base(context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            _context = context;
         }
 
-        public List<DocumentMetadata> Documents
+        public DocumentMetadata GetDocumentByClientId(int clientId, int documentId)
         {
-            get
-            {
-                return _context.Set<DocumentMetadata>().ToList();
-            }
+            return _context.Set<DocumentMetadata>().Include(d => d.Properties)
+                .FirstOrDefault(d => d.Id == documentId && d.ClientId == clientId);
         }
 
-        public void Add(DocumentMetadata document)
+        public IEnumerable<DocumentMetadata> GetDocuments(int clientId, int? skip = null, int? take = null)
         {
-            _context.Add(document);
-        }
-
-        public DocumentMetadata GetDocument(int clientId, int documentId)
-        {
-            return Documents.FirstOrDefault(d => d.Id == documentId && d.ClientId == clientId);
-        }
-
-        public List<DocumentMetadata> GetDocuments(int clientId, int? skip, int? take)
-        {
-            var query = Documents.AsQueryable().Where(d => d.ClientId == clientId);
+            var query = _context.Set<DocumentMetadata>().Include(d => d.Properties).AsQueryable()
+                .Where(d => d.ClientId == clientId);
 
             if (skip != null && skip > 0)
             {
@@ -56,16 +38,6 @@ namespace Mastery.KeeFi.Data.Repositories
             }
 
             return query?.ToList();
-        }
-
-        public void Remove(DocumentMetadata document)
-        {
-            _context.Remove(document);
-        }
-
-        public void Update(DocumentMetadata document)
-        {
-            _context.Update(document);
         }
     }
 }

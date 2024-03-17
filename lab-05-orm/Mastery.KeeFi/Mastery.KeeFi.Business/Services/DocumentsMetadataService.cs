@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Reflection.Metadata;
 
 namespace Mastery.KeeFi.Business.Services
 {
@@ -51,13 +52,13 @@ namespace Mastery.KeeFi.Business.Services
             _mapper = mapper;      
         }
 
-        public async Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadataDto documentMetadataDto)
+        public async Task<DocumentMetadataDto> CreateDocumentAsync(int clientId, DocumentMetadataDto documentMetadataDto)
         {
             Validate(documentMetadataDto);
 
             var documentMetadata = _mapper.Map<DocumentMetadata>(documentMetadataDto);
 
-            var client = _unitOfWork.ClientsRepository.GetClient(clientId);
+            var client = _unitOfWork.Clients.Get(clientId);
 
             if (client == null)
             {
@@ -67,15 +68,17 @@ namespace Mastery.KeeFi.Business.Services
 
             documentMetadata.Client = client;
 
-            _unitOfWork.DocumentsMetadataRepository.Add(documentMetadata);
+            _unitOfWork.Documents.Add(documentMetadata);
             _unitOfWork.SaveChanges();
 
-            return documentMetadata;
+            var documentDTO = _mapper.Map<DocumentMetadataDto>(documentMetadata);
+
+            return documentDTO;
         }
 
         public async Task DeleteDocumentAsync(int clientId, int documentId)
         {
-            var document = _unitOfWork.DocumentsMetadataRepository.GetDocument(clientId, documentId);
+            var document = _unitOfWork.Documents.GetDocumentByClientId(clientId, documentId);
 
             if (document == null)
             {
@@ -83,13 +86,13 @@ namespace Mastery.KeeFi.Business.Services
                 throw exception;
             }
 
-            _unitOfWork.DocumentsMetadataRepository.Remove(document);
+            _unitOfWork.Documents.Remove(document);
             _unitOfWork.SaveChanges();
         }
 
         public async Task<DocumentMetadataDto> GetDocumentAsync(int clientId, int documentId)
         {
-            var client = _unitOfWork.ClientsRepository.GetClient(clientId);
+            var client = _unitOfWork.Clients.Get(clientId);
 
             if (client == null)
             {
@@ -97,7 +100,7 @@ namespace Mastery.KeeFi.Business.Services
                 throw exception;
             }
 
-            var document = _unitOfWork.DocumentsMetadataRepository.GetDocument(clientId, documentId);
+            var document = _unitOfWork.Documents.GetDocumentByClientId(clientId, documentId);
 
             if (document == null)
             {
@@ -123,7 +126,7 @@ namespace Mastery.KeeFi.Business.Services
                 throw exception;
             }
 
-            var allDocuments = _unitOfWork.DocumentsMetadataRepository.Documents;
+            var allDocuments = _unitOfWork.Documents.GetDocuments(clientId, null, null);
 
             if (take > allDocuments?.Count())
             {
@@ -131,11 +134,11 @@ namespace Mastery.KeeFi.Business.Services
                 throw exception;
             }
 
-            var documents = _unitOfWork.DocumentsMetadataRepository.GetDocuments(clientId, skip, take);
+            var documents = _unitOfWork.Documents.GetDocuments(clientId, skip, take);
 
             if (documents?.Any() == false)
             {
-                var exception = new DocumentApiEntityNotFoundException($"There are no documents that blong to the client with Id={clientId}");
+                var exception = new DocumentApiEntityNotFoundException($"There are no documents that belong to the client with Id={clientId}");
                 throw exception;
             }
 
@@ -144,9 +147,9 @@ namespace Mastery.KeeFi.Business.Services
             return documentDTOs;
         }
 
-        public async Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDto documentMetadataDto)
+        public async Task<DocumentMetadataDto> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDto documentMetadataDto)
         {
-            var document = _unitOfWork.DocumentsMetadataRepository.GetDocument(clientId, documentId);
+            var document = _unitOfWork.Documents.GetDocumentByClientId(clientId, documentId);
 
             if (document == null)
             {
@@ -162,12 +165,15 @@ namespace Mastery.KeeFi.Business.Services
             document.ContentLength = documentMetadataDto.ContentLength;
             document.ContentType = documentMetadataDto.ContentType;
             document.ContentMd5 = documentMetadataDto.ContentMd5;
-            document.Properties = documentMetadataDto.Properties;
+            document.Properties = documentMetadataDto.Properties.Select(p => new DocumentMetadataProperty { DocumentId = documentId, Key = p.Key, Value = p.Value })
+                .ToList();
 
-            _unitOfWork.DocumentsMetadataRepository.Update(document);
+            _unitOfWork.Documents.Update(document);
             _unitOfWork.SaveChanges();
 
-            return document;
+            var documentDTO = _mapper.Map<DocumentMetadataDto>(document);
+
+            return documentDTO;
         }
 
         private void Validate(DocumentMetadataDto documentMetadataDto)

@@ -7,18 +7,10 @@ using System.Threading.Tasks;
 
 namespace Mastery.KeeFi.Data.Interfaces
 {
-    public interface IDocumentsMetadataRepository
+    public interface IDocumentsMetadataRepository : IRepository<DocumentMetadata>
     {
-        List<DocumentMetadata> Documents { get; }
+        IEnumerable<DocumentMetadata> GetDocuments(int clientId, int? skip, int? take);
 
-        List<DocumentMetadata> GetDocuments(int clientId, int? skip, int? take);
-
-        DocumentMetadata GetDocument(int clientId, int documentId);
-
-        void Add(DocumentMetadata document);
-
-        void Update(DocumentMetadata document);
-
-        void Remove(DocumentMetadata document);
+        DocumentMetadata GetDocumentByClientId(int clientId, int documentId);
     }
 }

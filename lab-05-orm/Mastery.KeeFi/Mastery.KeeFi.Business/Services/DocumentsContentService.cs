@@ -71,14 +71,14 @@ namespace Mastery.KeeFi.Business.Services
             document.ContentLength = (int)content.Length;
             document.ContentMd5 = contentMd5Hash;
 
-            DocumentMetadata metadata = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, document);
+            DocumentMetadataDto metadataDto = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, document);
 
-            string targetPath = Path.Combine(targetDirectory, metadata.FileName);
+            string targetPath = Path.Combine(targetDirectory, metadataDto.FileName);
 
             _fileService.CreateDirectory(targetDirectory);
 
             FileStream uploadStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
-            uploadStream.Write(content.ToArray(), 0, metadata.ContentLength);
+            uploadStream.Write(content.ToArray(), 0, metadataDto.ContentLength);
             uploadStream.Close();
         }
 

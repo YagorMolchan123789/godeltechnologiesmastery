@@ -4,19 +4,16 @@ using Mastery.KeeFi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
 namespace Mastery.KeeFi.Data.Migrations
 {
-    [DbContext(typeof(KeeFiDbContext))]
-    [Migration("20240315155924_InitialMigration")]
-    partial class InitialMigration
+    [DbContext(typeof(MainDbContext))]
+    partial class MainDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,6 +48,16 @@ namespace Mastery.KeeFi.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clients");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DateOfBirth = new DateOnly(1974, 6, 28),
+                            FirstName = "Valiantsina",
+                            LastName = "Chekan",
+                            Tags = "[\"string\",\"integer\"]"
+                        });
                 });
 
             modelBuilder.Entity("Mastery.KeeFi.Domain.Entities.DocumentMetadata", b =>
@@ -61,7 +68,7 @@ namespace Mastery.KeeFi.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClientId")
+                    b.Property<int>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<int>("ContentLength")
@@ -82,10 +89,6 @@ namespace Mastery.KeeFi.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Properties")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
@@ -94,6 +97,60 @@ namespace Mastery.KeeFi.Data.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("Documents");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ClientId = 1,
+                            ContentLength = 12000,
+                            ContentMd5 = "1dfeb3a910fd3976c30f85214be7a9ff",
+                            ContentType = "application/msword",
+                            FileName = "security.docx",
+                            Title = "Security"
+                        });
+                });
+
+            modelBuilder.Entity("Mastery.KeeFi.Domain.Entities.DocumentMetadataProperty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.ToTable("DocumentMetadataProperty");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DocumentId = 1,
+                            Key = "Country",
+                            Value = "Belarus"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DocumentId = 1,
+                            Key = "City",
+                            Value = "Minsk"
+                        });
                 });
 
             modelBuilder.Entity("Mastery.KeeFi.Domain.Entities.DocumentMetadata", b =>
@@ -101,14 +158,31 @@ namespace Mastery.KeeFi.Data.Migrations
                     b.HasOne("Mastery.KeeFi.Domain.Entities.Client", "Client")
                         .WithMany("Documents")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("Mastery.KeeFi.Domain.Entities.DocumentMetadataProperty", b =>
+                {
+                    b.HasOne("Mastery.KeeFi.Domain.Entities.DocumentMetadata", "Document")
+                        .WithMany("Properties")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
                 });
 
             modelBuilder.Entity("Mastery.KeeFi.Domain.Entities.Client", b =>
                 {
                     b.Navigation("Documents");
+                });
+
+            modelBuilder.Entity("Mastery.KeeFi.Domain.Entities.DocumentMetadata", b =>
+                {
+                    b.Navigation("Properties");
                 });
 #pragma warning restore 612, 618
         }

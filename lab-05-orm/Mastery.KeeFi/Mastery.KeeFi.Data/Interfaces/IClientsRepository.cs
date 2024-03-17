@@ -7,18 +7,8 @@ using System.Threading.Tasks;
 
 namespace Mastery.KeeFi.Data.Interfaces
 {
-    public interface IClientsRepository
+    public interface IClientsRepository : IRepository<Client>
     {
-        List<Client> Clients { get; }
-
-        List<Client> GetClients(int? skip, int? take, string[]? tags);
-
-        Client? GetClient(int id);
-
-        void Add(Client client);
-
-        void Update(Client client);
-
-        void Remove(Client client);
+        IEnumerable<Client> GetClients(int? skip, int? take, string[]? tags);
     }
 }

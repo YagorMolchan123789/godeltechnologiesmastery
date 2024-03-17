@@ -14,9 +14,9 @@ namespace Mastery.KeeFi.Business.Interfaces
 
         Task<DocumentMetadataDto> GetDocumentAsync(int clientId, int documentId);
 
-        Task<DocumentMetadata> CreateDocumentAsync(int clientId, DocumentMetadataDto documentMetadataDto);
+        Task<DocumentMetadataDto> CreateDocumentAsync(int clientId, DocumentMetadataDto documentMetadataDto);
 
-        Task<DocumentMetadata> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDto documentMetadataDto);
+        Task<DocumentMetadataDto> UpdateDocumentAsync(int clientId, int documentId, DocumentMetadataDto documentMetadataDto);
 
         Task DeleteDocumentAsync(int clientId, int documentId);
     }

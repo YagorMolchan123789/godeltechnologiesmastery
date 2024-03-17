@@ -10,46 +10,21 @@ using System.Threading.Tasks;
 
 namespace Mastery.KeeFi.Data.Repositories
 {
-    public class ClientsRepository : IClientsRepository
+    public class ClientsRepository :Repository<Client>, IClientsRepository
     {
-        private readonly KeeFiDbContext _context;
-
-        public ClientsRepository(KeeFiDbContext context)
+        public ClientsRepository(MainDbContext context) : base(context)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            _context = context;
         }
 
-        public List<Client> Clients
+        public IEnumerable<Client> GetClients(int? skip = null, int? take = null, string[]? tags = null)
         {
-            get
-            {
-                return _context.Set<Client>().ToList();
-            }
-        }
+            var query = _context.Set<Client>().AsQueryable();
 
-        public void Add(Client client)
-        {
-            _context.Add(client);
-        }
-
-        public Client? GetClient(int id)
-        {
-            return Clients.FirstOrDefault(c => c.Id == id);
-        }
-
-        public List<Client> GetClients(int? skip, int? take, string[]? tags)
-        {
-            var query = Clients.AsQueryable();
-
-            if (tags.Any())
+            if (tags!=null && tags.Any())
             {
                 var distinctedTags = tags.Distinct();
-                query = query?.Where(q => q.Tags.Any(t => distinctedTags.Contains(t)));
+                query = _context.Set<Client>().AsEnumerable().Where(q => q.Tags.Any(t => distinctedTags.Contains(t)))
+                    .AsQueryable();
             }
 
             if (skip != null && skip > 0)
@@ -63,16 +38,6 @@ namespace Mastery.KeeFi.Data.Repositories
             }
 
             return query?.ToList();
-        }
-
-        public void Remove(Client client)
-        {
-            _context.Remove(client);
-        }
-
-        public void Update(Client client)
-        {
-            _context.Update(client);
         }
     }
 }

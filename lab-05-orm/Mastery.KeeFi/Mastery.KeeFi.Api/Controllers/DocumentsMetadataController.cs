@@ -44,11 +44,11 @@ namespace Mastery.KeeFi.Api.Controllers
         [ProducesResponseType(typeof(IDictionary<string, string>), 400)]
         [ProducesResponseType(typeof(IDictionary<string, string>), 404)]
         [ProducesResponseType(500)]
-        public async Task<ActionResult<DocumentMetadata>> Post(
+        public async Task<ActionResult<DocumentMetadataDto>> Post(
             [FromRoute] int clientId,
             [FromBody] DocumentMetadataDto documentDto)
         {
-            DocumentMetadata result = await _documentsMetadataService.CreateDocumentAsync(clientId, documentDto);
+            DocumentMetadataDto result = await _documentsMetadataService.CreateDocumentAsync(clientId, documentDto);
             return Created($"/clients/{clientId}/documents/{result.Id}", result);
         }
 
@@ -73,7 +73,7 @@ namespace Mastery.KeeFi.Api.Controllers
             [FromRoute] int documentId,
             [FromBody] DocumentMetadataDto documentDto)
         {
-            DocumentMetadata result = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, documentDto);
+            DocumentMetadataDto result = await _documentsMetadataService.UpdateDocumentAsync(clientId, documentId, documentDto);
             return Ok(result);
         }
 

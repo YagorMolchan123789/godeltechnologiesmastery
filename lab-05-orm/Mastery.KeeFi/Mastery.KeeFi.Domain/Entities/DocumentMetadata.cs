@@ -29,6 +29,6 @@ namespace Mastery.KeeFi.Domain.Entities
         
         public string ContentMd5 { get; set; }
 
-        public Dictionary<string, string> Properties { get; set; }
+        public List<DocumentMetadataProperty> Properties { get; set; }
     }
 }
