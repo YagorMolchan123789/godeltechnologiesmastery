@@ -1,0 +1,30 @@
+﻿@model GTE.Mastery.ShoeStore.Business.Dtos.ShoeDto
+
+<div class="shoe-item">
+    <div class="shoe-name">
+        <b class="brand">@Model.Brand.Name - @Model.Name</b>
+    </div>
+    <div class="shoe-image">
+        <img src="~/img/@Model.ImagePath" width="width=" 400px" height="400px"  />
+    </div>
+    <div class="shoe-price">
+        <span class="price">@Model.Price</span>
+    </div>
+    <div class="shoe-description" style="margin-top: 1%">
+        <div>
+            <span>Vendor: @Model.Vendor</span>
+        </div>
+        <div>
+            <span>Brand: @Model.Brand.Name</span>
+        </div>
+        <div>
+            <span>Gender: @Model.Gender</span>
+        </div>
+        <div>
+            <span>Category: @Model.Category.Name</span>
+        </div>
+        <div>
+            <span>Color: @Model.Color.Name</span>
+        </div>
+    </div>
+</div>

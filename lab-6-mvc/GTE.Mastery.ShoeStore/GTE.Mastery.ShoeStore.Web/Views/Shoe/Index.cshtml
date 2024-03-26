@@ -1,0 +1,12 @@
+﻿@using GTE.Mastery.ShoeStore.Web.Helpers
+@model GTE.Mastery.ShoeStore.Web.Models.ShoeViewModel
+
+<div class="shoe-list-container">
+    <div class="row">
+        @foreach (var item in Model.Shoes)
+        {
+            <partial name="_ShoeLink" model="@item"/>
+        }
+    </div>    
+</div>
+<page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
