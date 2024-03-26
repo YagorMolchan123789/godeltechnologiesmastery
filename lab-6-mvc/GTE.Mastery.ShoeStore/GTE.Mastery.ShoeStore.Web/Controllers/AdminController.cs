@@ -42,7 +42,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public IActionResult CreateShoe()
         {
             CreateEditShoeDto shoeDto = new CreateEditShoeDto();
             _shoeService.InitializeDto(shoeDto);
