@@ -14,12 +14,10 @@ namespace GTE.Mastery.ShoeStore.Business.Interfaces
 
         Task<ShoeDto> GetShoeAsync(int shoeId);
 
-        Task<Shoe> CreateShoeAsync(CreateEditShoeDto shoeDto);
+        Task<Shoe> CreateShoeAsync(UpdateShoeDto shoeDto);
 
-        Task<Shoe> UpdateShoeAsync(int id, CreateEditShoeDto shoeDto);
+        Task<Shoe> UpdateShoeAsync(int id, UpdateShoeDto shoeDto);
 
         Task DeleteShoeAsync(int shoeId);
-
-        void InitializeDto(CreateEditShoeDto shoeDto);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using GTE.Mastery.ShoeStore.Business.Dtos;
-using GTE.Mastery.ShoeStore.Business.Extensions;
 using GTE.Mastery.ShoeStore.Business.Interfaces;
 using GTE.Mastery.ShoeStore.Data.Interfaces;
 using GTE.Mastery.ShoeStore.Domain.Entities;
@@ -25,9 +24,10 @@ namespace GTE.Mastery.ShoeStore.Business.Services
             _mapper = mapper;
         }
 
-        public async Task<Shoe> CreateShoeAsync(CreateEditShoeDto shoeDto)
+        public async Task<Shoe> CreateShoeAsync(UpdateShoeDto shoeDto)
         {
-            var shoe = _mapper.Map<Shoe>(shoeDto);
+            var shoe = new Shoe(shoeDto.Name, shoeDto.Vendor, shoeDto.Price, shoeDto.ImagePath, shoeDto.Gender, 
+                shoeDto.BrandId, shoeDto.CategoryId, shoeDto.ColorId, shoeDto.SizeId);
             _unitOfWork.Shoes.Add(shoe);
             _unitOfWork.SaveChanges();
             return shoe;
@@ -54,35 +54,20 @@ namespace GTE.Mastery.ShoeStore.Business.Services
             return shoeDtos;
         }
 
-        public async Task<Shoe> UpdateShoeAsync(int id, CreateEditShoeDto shoeDto)
+        public async Task<Shoe> UpdateShoeAsync(int id, UpdateShoeDto shoeDto)
         {
             var shoe = _unitOfWork.Shoes.Get(id);
 
             if (shoe != null)
             {
-                shoe.Name = shoeDto.Name;
-                shoe.Vendor = shoeDto.Vendor;
-                shoe.Price = shoeDto.Price;
-                shoe.BrandId = shoeDto.BrandId;
-                shoe.SizeId = shoeDto.SizeId;
-                shoe.CategoryId = shoeDto.CategoryId;
-                shoe.ColorId = shoeDto.ColorId;
-                shoe.Gender = shoeDto.Gender;
+                shoe.Update(shoeDto.Name, shoeDto.Vendor, shoeDto.Price, shoeDto.Gender, shoeDto.BrandId, 
+                    shoeDto.CategoryId, shoeDto.ColorId, shoeDto.SizeId);
             }
 
             _unitOfWork.Shoes.Update(shoe);
             _unitOfWork.SaveChanges();
 
             return shoe;
-        }
-
-        public void InitializeDto(CreateEditShoeDto shoeDto)
-        {
-            shoeDto.Genders = Gender.Male.ToSelectList();
-            shoeDto.Sizes = new SelectList(_unitOfWork.Sizes.GetAll(), "Id", "Value");
-            shoeDto.Categories = new SelectList(_unitOfWork.Categories.GetAll(), "Id", "Name");
-            shoeDto.Brands = new SelectList(_unitOfWork.Brands.GetAll(), "Id", "Name");
-            shoeDto.Colors = new SelectList(_unitOfWork.Colors.GetAll(), "Id", "Name");
         }
     }
 }

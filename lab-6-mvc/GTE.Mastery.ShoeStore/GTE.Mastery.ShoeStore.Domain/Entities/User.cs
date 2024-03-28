@@ -9,12 +9,23 @@ namespace GTE.Mastery.ShoeStore.Domain.Entities
 {
     public class User : IdentityUser
     {
-        public string? FirstName { get; set; }  
+        public string FirstName { get; set; }  
 
-        public string? LastName { get; set;}
+        public string LastName { get; set;}
 
-        public string? Country { get; set; }
+        public string Country { get; set; }
 
-        public string? City { get; set; }        
+        public string City { get; set; }
+
+        public User(string firstName, string lastName, string country, string city, string email, string phoneNumber)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            Country = country;
+            City = city;
+            UserName = email;
+            Email = email;
+            PhoneNumber = phoneNumber;
+        }
     }
 }

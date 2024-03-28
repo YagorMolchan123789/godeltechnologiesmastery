@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace GTE.Mastery.ShoeStore.Domain.Enums
 {
-    public enum Gender
+    public enum RoleTypes
     {
-        Male,
-        Female
+        Admin,
+        User
     }
 }

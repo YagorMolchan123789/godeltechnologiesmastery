@@ -1,4 +1,4 @@
-﻿@using GTE.Mastery.ShoeStore.Domain
+﻿@using GTE.Mastery.ShoeStore.Domain.Enums
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +27,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Contact">Contact</a>
                         </li>
-                        @if (User.IsInRole(RoleTypes.Admin))
+                        @if (User.IsInRole(RoleTypes.Admin.ToString()))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Admin</a>
@@ -35,7 +35,7 @@
                         }                        
                     </ul>
                     <ul class="navbar-nav justify-content-end">
-                        <partial name="_LoginMenu"/>
+                        <partial name="_LoginMenu" />
                     </ul>
                 </div>
             </div>

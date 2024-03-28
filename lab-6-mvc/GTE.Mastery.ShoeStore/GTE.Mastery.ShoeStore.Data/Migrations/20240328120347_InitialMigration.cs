@@ -32,10 +32,10 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Country = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    City = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -62,7 +62,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,7 +75,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -88,7 +88,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -220,13 +220,13 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Vendor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Vendor = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BrandId = table.Column<int>(type: "int", nullable: false),
                     SizeId = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     ColorId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
@@ -264,14 +264,14 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "125f5a51-92ef-40c3-b1b1-e7c326ff0a10", null, "Admin", "ADMIN" },
-                    { "e11b4ffb-15fd-43f7-8fda-8f1fd181d53f", null, "User", "USER" }
+                    { "921c3b36-ba5a-4d57-ac9c-de84b8ae823d", null, "User", "user" },
+                    { "b6e7248d-24b8-4148-8f8d-62dee072ad96", null, "Admin", "admin" }
                 });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "City", "ConcurrencyStamp", "Country", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "9827fc57-38eb-482c-ae83-cd1ffe0cb289", 0, "Bialystok", "0e63f6df-dc4d-4f6b-8081-d8da73efc0d2", "Poland", "yagormolchan@gmail.com", true, "Yagor", "Molchan", false, null, "YAGORMOLCHAN@GMAIL.COM", "YAGORMOLCHAN@GMAIL.COM", "AQAAAAIAAYagAAAAEGnIGrJo1IiUqchn5v9V1akI4ktLxmklVpKNaTbq0U3hwu0eJxMDFC+yYDga/L1ytA==", "+48796147133", true, "eba49d17-0b4c-4ba1-b887-c5dec22ece01", false, "yagormolchan@gmail.com" });
+                values: new object[] { "d1866523-fa6a-4fb0-b519-0dd5a982ac56", 0, "Bialystok", "ddf32279-d1d5-4731-bab6-b0d71f183d4b", "Poland", "yagormolchan@gmail.com", false, "Yagor", "Molchan", false, null, "yagormolchan@gmail.com", "yagormolchan@gmail.com", "AQAAAAIAAYagAAAAEH2hE7e+SWBq2018k216QLNx8ur9igiSMLWZudYo5XsBEisfqd5gJ9CYT5UjCPgvYg==", "+48796147133", false, "f938afd1-06bb-45cd-a4d9-30ee53f3c906", false, "yagormolchan@gmail.com" });
 
             migrationBuilder.InsertData(
                 table: "Brands",
@@ -348,8 +348,8 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 columns: new[] { "RoleId", "UserId" },
                 values: new object[,]
                 {
-                    { "125f5a51-92ef-40c3-b1b1-e7c326ff0a10", "9827fc57-38eb-482c-ae83-cd1ffe0cb289" },
-                    { "e11b4ffb-15fd-43f7-8fda-8f1fd181d53f", "9827fc57-38eb-482c-ae83-cd1ffe0cb289" }
+                    { "921c3b36-ba5a-4d57-ac9c-de84b8ae823d", "d1866523-fa6a-4fb0-b519-0dd5a982ac56" },
+                    { "b6e7248d-24b8-4148-8f8d-62dee072ad96", "d1866523-fa6a-4fb0-b519-0dd5a982ac56" }
                 });
 
             migrationBuilder.CreateIndex(

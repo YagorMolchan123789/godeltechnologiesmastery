@@ -5,6 +5,7 @@ using Color = GTE.Mastery.ShoeStore.Domain.Entities.Color;
 using Size = GTE.Mastery.ShoeStore.Domain.Entities.Size;
 using Microsoft.AspNetCore.Identity;
 using GTE.Mastery.ShoeStore.Domain;
+using GTE.Mastery.ShoeStore.Domain.Enums;
 
 namespace GTE.Mastery.ShoeStore.Data
 {
@@ -30,32 +31,21 @@ namespace GTE.Mastery.ShoeStore.Data
             var password = "MemCx35ecx8abc_";
             var passwordHasher = new PasswordHasher<User>();
 
-            var adminRole = new IdentityRole(RoleTypes.Admin);
-            adminRole.NormalizedName = adminRole?.Name?.ToUpper();
-
-            var userRole = new IdentityRole(RoleTypes.User);
-            userRole.NormalizedName = userRole?.Name?.ToUpper();
+            var adminRole = new IdentityRole(RoleTypes.Admin.ToString());
+            adminRole.NormalizedName = adminRole?.Name?.ToLower();
+            var userRole = new IdentityRole(RoleTypes.User.ToString());
+            userRole.NormalizedName = userRole?.Name?.ToLower();
 
             List<IdentityRole> roles = new List<IdentityRole>() { adminRole, userRole};
 
             builder.Entity<IdentityRole>()
                 .HasData(roles);
-            
-            var user = new User
-            {
-                FirstName = "Yagor",
-                LastName = "Molchan",
-                Country = "Poland",
-                City = "Bialystok",
-                PhoneNumber = "+48796147133",
-                Email = "yagormolchan@gmail.com",
-                UserName = "yagormolchan@gmail.com",
-                PhoneNumberConfirmed = true,
-                EmailConfirmed = true
-            };
 
-            user.NormalizedUserName = user.UserName.ToUpper();
-            user.NormalizedEmail = user.Email.ToUpper();
+            var user = new User("Yagor", "Molchan", "Poland", "Bialystok","yagormolchan@gmail.com", "+48796147133");
+
+            user.NormalizedUserName = user?.UserName?.ToLower();
+            user.NormalizedEmail = user?.Email?.ToLower();
+
             user.PasswordHash = passwordHasher.HashPassword(user, password);
 
             builder.Entity<User>()
@@ -66,13 +56,13 @@ namespace GTE.Mastery.ShoeStore.Data
             userRoles.Add(new IdentityUserRole<string>
             {
                 UserId = user.Id,
-                RoleId = roles.First(q => q.Name == RoleTypes.Admin).Id
+                RoleId = roles.First(q => q.Name == RoleTypes.Admin.ToString()).Id
             });
 
             userRoles.Add(new IdentityUserRole<string>
             {
                 UserId = user.Id,
-                RoleId = roles.First(q => q.Name == RoleTypes.User).Id
+                RoleId = roles.First(q => q.Name == RoleTypes.User.ToString()).Id
             });
 
             builder.Entity<IdentityUserRole<string>>()

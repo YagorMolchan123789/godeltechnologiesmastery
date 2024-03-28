@@ -4,14 +4,17 @@ namespace GTE.Mastery.ShoeStore.Web.Models
 {
     public class ShoeViewModel
     {
-        public PageViewModel PageViewModel { get; set; }
+        public int CurrentPage { get; set; }
+
+        public int PageCount { get; set; }
 
         public IEnumerable<ShoeDto> Shoes { get; set; }
 
-        public ShoeViewModel(IEnumerable<ShoeDto> shoes, PageViewModel pageViewModel)
+        public ShoeViewModel(IEnumerable<ShoeDto> shoes, int count, int pageNumber, int pageSize)
         {
             Shoes = shoes;
-            PageViewModel = pageViewModel;
+            CurrentPage = pageNumber;
+            PageCount = (int)Math.Ceiling(count / (double)pageSize);
         }
     }
 }

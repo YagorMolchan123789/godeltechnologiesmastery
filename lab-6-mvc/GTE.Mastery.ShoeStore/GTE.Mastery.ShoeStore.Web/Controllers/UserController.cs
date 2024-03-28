@@ -1,16 +1,13 @@
 ﻿using AutoMapper;
-using GTE.Mastery.ShoeStore.Business.Interfaces;
 using GTE.Mastery.ShoeStore.Domain;
 using GTE.Mastery.ShoeStore.Domain.Entities;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using GTE.Mastery.ShoeStore.Business.Dtos;
 using FluentValidation;
 using FluentValidation.Results;
 using FluentValidation.AspNetCore;
+using GTE.Mastery.ShoeStore.Domain.Enums;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
 {
@@ -20,20 +17,14 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         private readonly SignInManager<User> _signInManager;
 
         private readonly IValidator<RegisterDto> _registerValidator;
-        private readonly IValidator<LoginDto> _loginValidator;
-
-        private readonly IUserService _userService;
         private readonly IMapper _mapper;
 
         public UserController(UserManager<User> userManager, SignInManager<User> signInManager,
-            IValidator<RegisterDto> registerValidator, IValidator<LoginDto> loginValidator,
-            IUserService userService, IMapper mapper)
+            IValidator<RegisterDto> registerValidator, IMapper mapper)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
             _registerValidator = registerValidator ?? throw new ArgumentNullException(nameof(registerValidator));
-            _loginValidator = loginValidator ?? throw new ArgumentNullException(nameof(loginValidator));
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -76,7 +67,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 return View(registerDto);
             }
 
-            await _userManager.AddToRoleAsync(user,RoleTypes.User);
+            await _userManager.AddToRoleAsync(user,RoleTypes.User.ToString());
             return RedirectToAction("Login", "User");
         }
 
@@ -90,19 +81,25 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login([FromForm] LoginDto loginDto)
         {
-            ValidationResult validationResult = await _loginValidator.ValidateAsync(loginDto);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            if (!validationResult.IsValid)
+            if (user == null)
             {
-                validationResult.AddToModelState(ModelState);
+                ModelState.AddModelError("Email", "The user with such Email does not exist");
                 return View(loginDto);
             }
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var checkPasswordResult = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
-            if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            if (checkPasswordResult == false)
             {
-                var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
+                ModelState.AddModelError("", "You have typed not valid Password or Email");
+            }
+
+            var signInResult = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
+
+            if (signInResult.Succeeded)
+            {
                 return RedirectToAction("Index", "Home");
             }
 

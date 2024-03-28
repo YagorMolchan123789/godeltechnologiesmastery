@@ -18,6 +18,9 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -31,6 +34,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -89,6 +93,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -132,6 +137,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -232,9 +238,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ImagePath")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
@@ -244,6 +252,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Vendor")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -361,6 +370,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("City")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -368,6 +378,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -378,9 +389,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -431,22 +444,22 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "9827fc57-38eb-482c-ae83-cd1ffe0cb289",
+                            Id = "d1866523-fa6a-4fb0-b519-0dd5a982ac56",
                             AccessFailedCount = 0,
                             City = "Bialystok",
-                            ConcurrencyStamp = "0e63f6df-dc4d-4f6b-8081-d8da73efc0d2",
+                            ConcurrencyStamp = "ddf32279-d1d5-4731-bab6-b0d71f183d4b",
                             Country = "Poland",
                             Email = "yagormolchan@gmail.com",
-                            EmailConfirmed = true,
+                            EmailConfirmed = false,
                             FirstName = "Yagor",
                             LastName = "Molchan",
                             LockoutEnabled = false,
-                            NormalizedEmail = "YAGORMOLCHAN@GMAIL.COM",
-                            NormalizedUserName = "YAGORMOLCHAN@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEGnIGrJo1IiUqchn5v9V1akI4ktLxmklVpKNaTbq0U3hwu0eJxMDFC+yYDga/L1ytA==",
+                            NormalizedEmail = "yagormolchan@gmail.com",
+                            NormalizedUserName = "yagormolchan@gmail.com",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH2hE7e+SWBq2018k216QLNx8ur9igiSMLWZudYo5XsBEisfqd5gJ9CYT5UjCPgvYg==",
                             PhoneNumber = "+48796147133",
-                            PhoneNumberConfirmed = true,
-                            SecurityStamp = "eba49d17-0b4c-4ba1-b887-c5dec22ece01",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "f938afd1-06bb-45cd-a4d9-30ee53f3c906",
                             TwoFactorEnabled = false,
                             UserName = "yagormolchan@gmail.com"
                         });
@@ -481,15 +494,15 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "125f5a51-92ef-40c3-b1b1-e7c326ff0a10",
+                            Id = "b6e7248d-24b8-4148-8f8d-62dee072ad96",
                             Name = "Admin",
-                            NormalizedName = "ADMIN"
+                            NormalizedName = "admin"
                         },
                         new
                         {
-                            Id = "e11b4ffb-15fd-43f7-8fda-8f1fd181d53f",
+                            Id = "921c3b36-ba5a-4d57-ac9c-de84b8ae823d",
                             Name = "User",
-                            NormalizedName = "USER"
+                            NormalizedName = "user"
                         });
                 });
 
@@ -582,13 +595,13 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "9827fc57-38eb-482c-ae83-cd1ffe0cb289",
-                            RoleId = "125f5a51-92ef-40c3-b1b1-e7c326ff0a10"
+                            UserId = "d1866523-fa6a-4fb0-b519-0dd5a982ac56",
+                            RoleId = "b6e7248d-24b8-4148-8f8d-62dee072ad96"
                         },
                         new
                         {
-                            UserId = "9827fc57-38eb-482c-ae83-cd1ffe0cb289",
-                            RoleId = "e11b4ffb-15fd-43f7-8fda-8f1fd181d53f"
+                            UserId = "d1866523-fa6a-4fb0-b519-0dd5a982ac56",
+                            RoleId = "921c3b36-ba5a-4d57-ac9c-de84b8ae823d"
                         });
                 });
 

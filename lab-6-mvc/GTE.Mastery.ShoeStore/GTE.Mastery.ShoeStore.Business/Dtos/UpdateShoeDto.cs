@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GTE.Mastery.ShoeStore.Business.Dtos
 {
-    public class CreateEditShoeDto
+    public class UpdateShoeDto
     {
         public int Id { get; set; }
 
@@ -23,22 +23,12 @@ namespace GTE.Mastery.ShoeStore.Business.Dtos
 
         public Gender Gender { get; set; }
 
-        public SelectList Genders { get; set; }
-
         public int BrandId { get; set; }
-
-        public SelectList Brands { get; set; }
 
         public int SizeId { get; set; }
 
-        public SelectList Sizes { get; set; }
-
         public int ColorId { get; set; }
 
-        public SelectList Colors { get; set; }
-
         public int CategoryId { get; set; }
-        
-        public SelectList Categories { get; set; }
     }
 }

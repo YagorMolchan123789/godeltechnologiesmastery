@@ -32,65 +32,7 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
             }
         }
 
-        private IRepository<Size> _sizeRepository;
-
-        public IRepository<Size> Sizes
-        {
-            get
-            {
-                if (_sizeRepository == null)
-                {
-                    _sizeRepository = new Repository<Size>(_context);
-                }
-
-                return _sizeRepository;
-            }
-        }
-
-        private IRepository<Brand> _brandRepository;
-
-        public IRepository<Brand> Brands
-        {
-            get
-            {
-                if (_brandRepository == null)
-                {
-                    _brandRepository = new Repository<Brand>(_context);
-                }
-
-                return _brandRepository;
-            }
-        }
-
-        private IRepository<Category> _categoryRepository;
-
-        public IRepository<Category> Categories
-        {
-            get
-            {
-                if (_categoryRepository == null)
-                {
-                    _categoryRepository = new Repository<Category>(_context);
-                }
-
-                return _categoryRepository;
-            }
-        }
-
-        private IRepository<Color> _colorRepository;
-
-        public IRepository<Color> Colors
-        {
-            get
-            {
-                if (_colorRepository == null)
-                {
-                    _colorRepository = new Repository<Color>(_context);
-                }
-
-                return _colorRepository;
-            }
-        }
+        public MainDbContext Context => _context;
 
         public void Dispose()
         {

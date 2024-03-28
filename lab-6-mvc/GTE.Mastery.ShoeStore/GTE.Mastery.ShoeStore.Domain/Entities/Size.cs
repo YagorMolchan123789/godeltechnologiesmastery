@@ -12,6 +12,6 @@ namespace GTE.Mastery.ShoeStore.Domain.Entities
 
         public int Value { get; set; }
 
-        public virtual ICollection<Shoe>? Shoes { get; set; }
+        public virtual ICollection<Shoe> Shoes { get; set; }
     }
 }

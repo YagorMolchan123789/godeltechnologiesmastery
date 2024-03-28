@@ -1,67 +1,81 @@
-﻿using AutoMapper;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using GTE.Mastery.ShoeStore.Business.Dtos;
 using GTE.Mastery.ShoeStore.Business.Interfaces;
-using GTE.Mastery.ShoeStore.Data.Interfaces;
-using GTE.Mastery.ShoeStore.Domain;
+using GTE.Mastery.ShoeStore.Domain.Entities;
 using GTE.Mastery.ShoeStore.Domain.Enums;
 using GTE.Mastery.ShoeStore.Web.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.ComponentModel;
+using GTE.Mastery.ShoeStore.Web.Filters;
+using GTE.Mastery.ShoeStore.Domain;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
 {
-    [Authorize(Roles = RoleTypes.Admin)]
+    [ShoeStoreFilterAuthorize("Admin")]
     public class AdminController : Controller
     {
-        private readonly IValidator<CreateEditShoeDto> _validator;
+        private readonly IValidator<UpdateShoeDto> _validator;
+        private readonly IConfiguration _configuration;
         private readonly IShoeService _shoeService;
 
-        public AdminController(IValidator<CreateEditShoeDto> validator,
-            IShoeService shoeService, IMapper mapper)
+        private readonly IRepositoryFactory<Size> _sizeFactory;
+        private readonly IRepositoryFactory<Brand> _brandFactory;
+        private readonly IRepositoryFactory<Category> _categoryFactory;
+        private readonly IRepositoryFactory<Color> _colorFactory;
+
+        public AdminController(IValidator<UpdateShoeDto> validator, IConfiguration configuration,
+            IShoeService shoeService, IRepositoryFactory<Brand> brandFactory,
+            IRepositoryFactory<Category> categoryFactory, IRepositoryFactory<Color> colorFactory,
+            IRepositoryFactory<Size> sizeFactory)
         {
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _shoeService = shoeService ?? throw new ArgumentNullException(nameof(shoeService));
+            _brandFactory = brandFactory ?? throw new ArgumentNullException(nameof(brandFactory));
+            _categoryFactory = categoryFactory ?? throw new ArgumentNullException(nameof(categoryFactory));
+            _colorFactory = colorFactory ?? throw new ArgumentNullException(nameof(colorFactory));
+            _sizeFactory = sizeFactory ?? throw new ArgumentNullException(nameof(sizeFactory));
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page=1)
         {
             int pageSize = 6;
-            var count = (await _shoeService.ListShoesAsync()).Count();           
+            var count = (await _shoeService.ListShoesAsync()).Count();
             var shoes = await _shoeService.ListShoesAsync((page - 1) * pageSize, pageSize);
 
-            PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
-            ShoeViewModel shoeViewModel = new ShoeViewModel(shoes, pageViewModel);
+            ShoeViewModel model = new ShoeViewModel(shoes, count, page, pageSize);
 
-            return View(shoeViewModel);
+            return View(model);
         }
 
         [HttpGet]
         public IActionResult CreateShoe()
         {
-            CreateEditShoeDto shoeDto = new CreateEditShoeDto();
-            _shoeService.InitializeDto(shoeDto);
+            UpdateShoeDto shoeDto = new UpdateShoeDto();
+            InitializeDto();
             return View(shoeDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateShoe([FromForm] CreateEditShoeDto shoeDto)
+        public async Task<IActionResult> CreateShoe([FromForm] UpdateShoeDto shoeDto)
         {
             ValidationResult validationResult = _validator.Validate(shoeDto);
 
             if (!validationResult.IsValid)
             {
                 validationResult.AddToModelState(ModelState);
-                _shoeService.InitializeDto(shoeDto);
+                InitializeDto();
                 return View(shoeDto);
             }
 
-            shoeDto.ImagePath = "shoe.png";
+            if (string.IsNullOrEmpty(shoeDto.ImagePath))
+            {
+                shoeDto.ImagePath = _configuration.GetSection("DefaultImagePath").Value;
+            }            
 
             var shoe = await _shoeService.CreateShoeAsync(shoeDto);
 
@@ -70,7 +84,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            return View(shoeDto);
+            return BadRequest(shoe);
         }
 
         [HttpGet]
@@ -80,7 +94,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
 
             if (shoe != null)
             {
-                CreateEditShoeDto shoeDto = new CreateEditShoeDto()
+                UpdateShoeDto shoeDto = new UpdateShoeDto()
                 {
                     Id = id,
                     Name = shoe.Name,
@@ -94,23 +108,23 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                     ColorId = shoe.ColorId
                 };
 
-                _shoeService.InitializeDto(shoeDto);
+                InitializeDto();
 
                 return View(shoeDto);
             }
 
-            return View("Edit");
+            return BadRequest(shoe);
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditShoe([FromRoute] int id,  [FromForm] CreateEditShoeDto shoeDto)
+        public async Task<IActionResult> EditShoe([FromRoute] int id,  [FromForm] UpdateShoeDto shoeDto)
         {
             ValidationResult validationResult = _validator.Validate(shoeDto);
 
             if (!validationResult.IsValid)
             {
                 validationResult.AddToModelState(ModelState);
-                _shoeService.InitializeDto(shoeDto);
+                InitializeDto();
                 return View(shoeDto);
             }
 
@@ -121,13 +135,27 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            return View("Edit");
+            return BadRequest(shoe);
         }
 
         public async Task<IActionResult> DeleteShoe([FromRoute] int id)
         {
             await _shoeService.DeleteShoeAsync(id);
             return RedirectToAction("Index");
+        }
+
+        private void InitializeDto()
+        {
+            ViewBag.Genders = Enum.GetValues(typeof(Gender)).Cast<Gender>().Select(v => new SelectListItem
+            {
+                Text = v.ToString(),
+                Value = ((int)v).ToString()
+            }).ToList();
+
+            ViewBag.Sizes = new SelectList(_sizeFactory.GetEntities(), "Id", "Value");
+            ViewBag.Brands = new SelectList(_brandFactory.GetEntities(), "Id", "Name");
+            ViewBag.Categories = new SelectList(_categoryFactory.GetEntities(), "Id", "Name");
+            ViewBag.Colors = new SelectList(_colorFactory.GetEntities(), "Id", "Name");
         }
     }
 }

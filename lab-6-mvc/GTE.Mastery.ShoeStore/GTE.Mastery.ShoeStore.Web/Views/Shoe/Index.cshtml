@@ -1,12 +1,29 @@
-﻿@using GTE.Mastery.ShoeStore.Web.Helpers
-@model GTE.Mastery.ShoeStore.Web.Models.ShoeViewModel
+﻿@model GTE.Mastery.ShoeStore.Web.Models.ShoeViewModel
 
-<div class="shoe-list-container">
-    <div class="row">
-        @foreach (var item in Model.Shoes)
+@if(Model.Shoes.Count()>0)
+{
+    <div class="shoe-list-container">
+        <div class="row">
+            @foreach (var item in Model.Shoes)
+            {
+                <partial name="_ShoeLink" model="@item" />
+            }
+        </div>
+    </div>
+    <ul class="pagination">
+        @for (int i = 1; i <= Model.PageCount; i++)
         {
-            <partial name="_ShoeLink" model="@item"/>
+            <li class="page-item">
+                @if (i != Model.CurrentPage)
+                {
+                    <a class="page-link" asp-controller="Shoe" asp-action="Index" asp-route-page="@i">@i</a>
+                }
+                else
+                {
+                    <a class="active page-link" asp-controller="Admin" asp-action="Index" asp-route-page="@i" style="background-color: dodgerblue; color: white">@i</a>
+                }
+            </li>
         }
-    </div>    
-</div>
-<page-link page-model="Model.PageViewModel" page-action="Index"></page-link>
+    </ul>
+}
+

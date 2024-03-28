@@ -9,16 +9,8 @@ namespace GTE.Mastery.ShoeStore.Data.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        IShoesRepository Shoes { get; } 
-
-        IRepository<Size> Sizes { get; }
-
-        IRepository<Brand> Brands { get; }
-
-        IRepository<Category> Categories { get; }
-
-        IRepository<Color> Colors { get; }
-
+        IShoesRepository Shoes { get; }
+        MainDbContext Context { get; }
         void SaveChanges();
     }
 }
