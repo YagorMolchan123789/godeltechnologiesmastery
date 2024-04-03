@@ -15,6 +15,18 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
 
         }
 
+        public bool IsUnique(int id, string name, int sizeId, int colorId)
+        {
+            Shoe shoe = _context.Set<Shoe>().FirstOrDefault(s => s.Name == name && s.SizeId == sizeId && s.ColorId == colorId);
+
+            if (shoe != null && shoe.Id != id)
+            {
+                return false;
+            }
+            
+            return true;
+        }
+
         public IEnumerable<Shoe> GetShoes(int? skip = null, int? take = null)
         {
             var query = _context.Set<Shoe>().AsQueryable();

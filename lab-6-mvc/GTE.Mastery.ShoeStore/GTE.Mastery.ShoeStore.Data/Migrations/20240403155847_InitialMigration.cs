@@ -1,9 +1,10 @@
 ﻿using System;
+using GTE.Mastery.ShoeStore.Domain.Entities;
+using GTE.Mastery.ShoeStore.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
-
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
 namespace GTE.Mastery.ShoeStore.Data.Migrations
 {
@@ -13,6 +14,16 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            var adminRoleGuid = Guid.NewGuid();
+            var userRoleGuid = Guid.NewGuid();
+            var adminUserGuid = Guid.NewGuid();
+            var adminPassword = "AdminCx35ecx8abc_";
+            var adminPasswordHasher = new PasswordHasher<User>();
+
+            var user = new User("Milij", "Chelovek", "Poland", "Bialystok", "milijchelovek@gmail.com", "+48345123890");
+            user.NormalizedEmail = user.Email.ToLower();
+            user.PasswordHash = adminPasswordHasher.HashPassword(user, adminPassword);
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -32,11 +43,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(20)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(20)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -62,7 +73,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(20)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,7 +86,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(20)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -88,7 +99,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(20)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,26 +162,6 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUserLogins",
-                columns: table => new
-                {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
-                    table.ForeignKey(
-                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
@@ -195,37 +186,17 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUserTokens",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
-                    table.ForeignKey(
-                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Shoes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Vendor = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Vendor = table.Column<string>(type: "nvarchar(20)", nullable: false),
                     BrandId = table.Column<int>(type: "int", nullable: false),
                     SizeId = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     ColorId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
@@ -259,88 +230,27 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.AddUniqueConstraint(
+                name: "UQ_Shoes_Name_SizeId_ColorId",
+                table: "Shoes",
+                columns: new[] { "Name", "SizeId", "ColorId" 
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "921c3b36-ba5a-4d57-ac9c-de84b8ae823d", null, "User", "user" },
-                    { "b6e7248d-24b8-4148-8f8d-62dee072ad96", null, "Admin", "admin" }
+                        { adminRoleGuid.ToString(), null, RoleTypes.Admin.ToString(), RoleTypes.Admin.ToString().ToLower() },
+                        { userRoleGuid.ToString(), null, RoleTypes.User.ToString(), RoleTypes.User.ToString().ToLower() }
                 });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "City", "ConcurrencyStamp", "Country", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "d1866523-fa6a-4fb0-b519-0dd5a982ac56", 0, "Bialystok", "ddf32279-d1d5-4731-bab6-b0d71f183d4b", "Poland", "yagormolchan@gmail.com", false, "Yagor", "Molchan", false, null, "yagormolchan@gmail.com", "yagormolchan@gmail.com", "AQAAAAIAAYagAAAAEH2hE7e+SWBq2018k216QLNx8ur9igiSMLWZudYo5XsBEisfqd5gJ9CYT5UjCPgvYg==", "+48796147133", false, "f938afd1-06bb-45cd-a4d9-30ee53f3c906", false, "yagormolchan@gmail.com" });
-
-            migrationBuilder.InsertData(
-                table: "Brands",
-                columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Adidas" },
-                    { 2, "Calvin Klein" },
-                    { 3, "Nike" },
-                    { 4, "Marko" },
-                    { 5, "Belwest" },
-                    { 6, "Vans" },
-                    { 7, "Converse" },
-                    { 8, "Tommi Hilfliger" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Boots" },
-                    { 2, "Sneakers" },
-                    { 3, "Gumshoes" },
-                    { 4, "Shoes" },
-                    { 5, "Slippers" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Colors",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Dark Blue" },
-                    { 2, "Yellow" },
-                    { 3, "Orrange" },
-                    { 4, "Dark Khaki" },
-                    { 5, "Olive" },
-                    { 6, "Green" },
-                    { 7, "Orange Red" },
-                    { 8, "Dark Gray" },
-                    { 9, "Brown" },
-                    { 10, "Chocolate" },
-                    { 11, "Red" },
-                    { 12, "Black" },
-                    { 13, "White" },
-                    { 14, "Beige" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Sizes",
-                columns: new[] { "Id", "Value" },
-                values: new object[,]
-                {
-                    { 1, 33 },
-                    { 2, 34 },
-                    { 3, 35 },
-                    { 4, 36 },
-                    { 5, 37 },
-                    { 6, 38 },
-                    { 7, 39 },
-                    { 8, 40 },
-                    { 9, 41 },
-                    { 10, 42 },
-                    { 11, 43 },
-                    { 12, 44 },
-                    { 13, 45 },
-                    { 14, 46 },
-                    { 15, 47 }
+                    { adminUserGuid.ToString(), 0, user.City, Guid.NewGuid().ToString(), user.Country, user.Email, false, user.FirstName, user.LastName, false, null, user.NormalizedEmail, null, user.PasswordHash, user.PhoneNumber, false, Guid.NewGuid().ToString(), false, user.FirstName + " " + user.LastName }
                 });
 
             migrationBuilder.InsertData(
@@ -348,8 +258,85 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 columns: new[] { "RoleId", "UserId" },
                 values: new object[,]
                 {
-                    { "921c3b36-ba5a-4d57-ac9c-de84b8ae823d", "d1866523-fa6a-4fb0-b519-0dd5a982ac56" },
-                    { "b6e7248d-24b8-4148-8f8d-62dee072ad96", "d1866523-fa6a-4fb0-b519-0dd5a982ac56" }
+                    {adminRoleGuid.ToString(), adminUserGuid.ToString() },
+                    {userRoleGuid.ToString(), adminUserGuid.ToString() }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Brands",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    {1, "Adidas" },
+                    {2, "Calvin Klein" },
+                    {3, "Nike" },
+                    {4, "Marko" },
+                    {5, "Belwest" },
+                    {6, "Vans" },
+                    {7, "Converse" },
+                    {8, "Tommi Hilfliger"},
+                    {9, "Polo Ralph Lauren" },
+                    {10, "Timberland" },
+                    {11, "Puma" },
+                    {12, "Lacoste" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    {1, "Boots" },
+                    {2, "Sneakers" },
+                    {3, "Gumshoes" },
+                    {4, "Shoes" },
+                    {5, "Slippers" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Sizes",
+                columns: new[] { "Id", "Value" },
+                values: new object[,]
+                {
+                    {1, 33 },
+                    {2, 34 },
+                    {3, 35 },
+                    {4, 36 },
+                    {5, 37 },
+                    {6, 38 },
+                    {7, 39 },
+                    {8, 40 },
+                    {9, 41 },
+                    {10, 42 },
+                    {11, 43 },
+                    {12, 44 },
+                    {13, 45 },
+                    {14, 46 },
+                    {15, 47 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Colors",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    {1, "Dark Blue" },
+                    {2, "Yellow" },
+                    {3, "Blue" },
+                    {4, "Orrange" },
+                    {5, "Dark Khaki" },
+                    {6, "Olive" },
+                    {7, "Green" },
+                    {8, "Pink" },
+                    {9, "Light Gray" },
+                    {10, "Dark Gray" },
+                    {11, "Violet" },
+                    {12, "Brown" },
+                    {13, "Chocolate" },
+                    {14, "Red" },
+                    {15, "Black" },
+                    {16, "White" },
+                    {17, "Beige" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -367,11 +354,6 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
                 table: "AspNetUserClaims",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserLogins_UserId",
-                table: "AspNetUserLogins",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -422,13 +404,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                 name: "AspNetUserClaims");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
-
-            migrationBuilder.DropTable(
                 name: "AspNetUserRoles");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
                 name: "Shoes");

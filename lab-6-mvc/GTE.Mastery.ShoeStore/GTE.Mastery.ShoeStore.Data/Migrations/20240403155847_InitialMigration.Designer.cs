@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GTE.Mastery.ShoeStore.Data.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20240328120347_InitialMigration")]
+    [Migration("20240403155847_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -38,53 +38,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Adidas"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Calvin Klein"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Nike"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Marko"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Belwest"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "Vans"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "Converse"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Name = "Tommi Hilfliger"
-                        });
                 });
 
             modelBuilder.Entity("GTE.Mastery.ShoeStore.Domain.Entities.Category", b =>
@@ -97,38 +55,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Boots"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Sneakers"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Gumshoes"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Shoes"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Slippers"
-                        });
                 });
 
             modelBuilder.Entity("GTE.Mastery.ShoeStore.Domain.Entities.Color", b =>
@@ -141,83 +72,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Colors");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Dark Blue"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Yellow"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Orrange"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Dark Khaki"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Olive"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "Green"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "Orange Red"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Name = "Dark Gray"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Name = "Brown"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Name = "Chocolate"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Name = "Red"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Name = "Black"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Name = "White"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Name = "Beige"
-                        });
                 });
 
             modelBuilder.Entity("GTE.Mastery.ShoeStore.Domain.Entities.Shoe", b =>
@@ -246,7 +105,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -256,7 +115,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("Vendor")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -285,83 +144,6 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Sizes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Value = 33
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Value = 34
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Value = 35
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Value = 36
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Value = 37
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Value = 38
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Value = 39
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Value = 40
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Value = 41
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Value = 42
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Value = 43
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Value = 44
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Value = 45
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Value = 46
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Value = 47
-                        });
                 });
 
             modelBuilder.Entity("GTE.Mastery.ShoeStore.Domain.Entities.User", b =>
@@ -374,7 +156,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -382,7 +164,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -393,11 +175,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -429,6 +211,7 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -443,29 +226,6 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "d1866523-fa6a-4fb0-b519-0dd5a982ac56",
-                            AccessFailedCount = 0,
-                            City = "Bialystok",
-                            ConcurrencyStamp = "ddf32279-d1d5-4731-bab6-b0d71f183d4b",
-                            Country = "Poland",
-                            Email = "yagormolchan@gmail.com",
-                            EmailConfirmed = false,
-                            FirstName = "Yagor",
-                            LastName = "Molchan",
-                            LockoutEnabled = false,
-                            NormalizedEmail = "yagormolchan@gmail.com",
-                            NormalizedUserName = "yagormolchan@gmail.com",
-                            PasswordHash = "AQAAAAIAAYagAAAAEH2hE7e+SWBq2018k216QLNx8ur9igiSMLWZudYo5XsBEisfqd5gJ9CYT5UjCPgvYg==",
-                            PhoneNumber = "+48796147133",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "f938afd1-06bb-45cd-a4d9-30ee53f3c906",
-                            TwoFactorEnabled = false,
-                            UserName = "yagormolchan@gmail.com"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -493,20 +253,6 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "b6e7248d-24b8-4148-8f8d-62dee072ad96",
-                            Name = "Admin",
-                            NormalizedName = "admin"
-                        },
-                        new
-                        {
-                            Id = "921c3b36-ba5a-4d57-ac9c-de84b8ae823d",
-                            Name = "User",
-                            NormalizedName = "user"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -594,18 +340,6 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "d1866523-fa6a-4fb0-b519-0dd5a982ac56",
-                            RoleId = "b6e7248d-24b8-4148-8f8d-62dee072ad96"
-                        },
-                        new
-                        {
-                            UserId = "d1866523-fa6a-4fb0-b519-0dd5a982ac56",
-                            RoleId = "921c3b36-ba5a-4d57-ac9c-de84b8ae823d"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>

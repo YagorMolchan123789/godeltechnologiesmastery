@@ -2,8 +2,9 @@
 
 <div class="shoe-create-edit-container">
     <h3>Edit shoe</h3>
-    <form method="post" asp-controller="Admin" asp-action="EditShoe">
-        <div class="shoe-field-container">
+    <form method="post" id="editShoeForm" asp-controller="Admin" asp-action="EditShoe" asp-route-page="@ViewBag.CurrentPage">
+        <div class="validation" asp-validation-summary="ModelOnly"></div>
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="Name">Name</label>
                 <input type="text" asp-for="Name" class="form-control" required/>
@@ -15,46 +16,70 @@
                 <span asp-validation-for="Vendor"></span>
             </div>
         </div>
-        <div class="shoe-field-container">
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="Price">Price</label>
-                <input type="text" asp-for="Price" class="form-control" required/>
+                <input type="text" asp-for="Price" class="form-control" onfocus="this.value = this.value;" required />
                 <span asp-validation-for="Price"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Gender">Gender</label>
-                <select class="form-control" asp-for="Gender" asp-items="@ViewBag.Genders" required></select>
+                <select class="form-select form-select-lg" asp-for="Gender" required>
+                    @foreach (var item in Model.Genders)
+                    {
+                        <option value="@item">@item.ToString()</option>
+                    }
+                </select>
                 <span asp-validation-for="Gender"></span>
             </div>
         </div>
-        <div class="shoe-field-container">
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="CategoryId">Category</label>
-                <select class="form-control" asp-for="CategoryId" asp-items="@ViewBag.Categories" required></select>
+                <select class="form-select form-select-lg" asp-for="CategoryId" required>
+                    @foreach (var item in Model.Categories)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
                 <span asp-validation-for="CategoryId"></span>
             </div>
             <div class="form-group">
                 <label asp-for="BrandId">Brand</label>
-                <select class="form-control" asp-for="BrandId" asp-items="@ViewBag.Brands" required></select>
+                <select class="form-select form-select-lg" asp-for="BrandId" required>
+                    @foreach (var item in Model.Brands)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
                 <span asp-validation-for="BrandId"></span>
             </div>
         </div>
-        <div class="shoe-field-container">
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="SizeId">Size</label>
-                <select class="form-control" asp-for="SizeId" asp-items="@ViewBag.Sizes" required></select>
+                <select class="form-select form-select-lg" asp-for="SizeId" required>
+                    @foreach (var item in Model.Sizes)
+                    {
+                        <option value="@item.Id">@item.Value</option>
+                    }
+                </select>
                 <span asp-validation-for="SizeId"></span>
             </div>
             <div class="form-group">
                 <label asp-for="ColorId">Color</label>
-                <select class="form-control" asp-for="ColorId" asp-items="@ViewBag.Colors" required></select>
+                <select class="form-select form-select-lg" asp-for="ColorId" required>
+                    @foreach (var item in Model.Colors)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
                 <span asp-validation-for="ColorId"></span>
             </div>
         </div>
-        <div class="shoe-submit-container">
-            <div class="form-group">
-                <button type="submit" class="btn btn-success">Edit</button>
-            </div>
+        <div class="submit-container">
+            <a class="btn btn-primary" asp-controller="Admin" asp-action="Index" asp-route-page="@ViewBag.CurrentPage">Cancel</a>
+            <button id="editShoeSubmit" type="submit" class="btn btn-success">Edit</button>
         </div>
     </form>
 </div>

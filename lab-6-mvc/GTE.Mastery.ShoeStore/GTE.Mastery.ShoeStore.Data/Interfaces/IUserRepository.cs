@@ -2,18 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace GTE.Mastery.ShoeStore.Data.Interfaces
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUserRepository : IRepository<User>
     {
-        IShoesRepository Shoes { get; }
-
-        IUserRepository Users { get; }
-
-        MainDbContext Context { get; }
-        void SaveChanges();
+        bool UserExists(string email);
     }
 }

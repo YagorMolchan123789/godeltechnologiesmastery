@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GTE.Mastery.ShoeStore.Domain;
 using GTE.Mastery.ShoeStore.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +10,7 @@ using GTE.Mastery.ShoeStore.Domain.Enums;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
 {
-    public class UserController : Controller
+    public class AccountController : Controller
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
@@ -19,7 +18,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         private readonly IValidator<RegisterDto> _registerValidator;
         private readonly IMapper _mapper;
 
-        public UserController(UserManager<User> userManager, SignInManager<User> signInManager,
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager,
             IValidator<RegisterDto> registerValidator, IMapper mapper)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -46,13 +45,6 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 return View(registerDto);
             }
 
-            var userExists = await _userManager.FindByEmailAsync(registerDto.Email);
-
-            if (userExists != null)
-            {
-                ModelState.AddModelError("Email","The user with this Email exists already");
-            }
-
             var user = _mapper.Map<User>(registerDto);
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -68,7 +60,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
             }
 
             await _userManager.AddToRoleAsync(user,RoleTypes.User.ToString());
-            return RedirectToAction("Login", "User");
+            return RedirectToAction("Login", "Account");
         }
 
         [HttpGet]
@@ -93,7 +85,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
 
             if (checkPasswordResult == false)
             {
-                ModelState.AddModelError("", "You have typed not valid Password or Email");
+                ModelState.AddModelError("Password", "You have typed not valid Password");
             }
 
             var signInResult = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);

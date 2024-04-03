@@ -4,27 +4,28 @@ using GTE.Mastery.ShoeStore.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Constraints;
-using GTE.Mastery.ShoeStore.Web.Filters;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
 {
-    [ShoeStoreFilterAuthorize]
+    [Authorize]
     public class ShoeController : Controller
     {
         private readonly IShoeService _shoeService;
+        private readonly IConfiguration _configuration;
 
-        public ShoeController(IShoeService shoeService)
+        public ShoeController(IShoeService shoeService, IConfiguration configuration)
         {
             _shoeService = shoeService ?? throw new ArgumentNullException(nameof(shoeService));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public async Task<IActionResult> Index(int page=1)
+        public async Task<IActionResult> Index(int page = 1)
         {
-            int pageSize = 6;
-            var count = (await _shoeService.ListShoesAsync()).Count();
-            var shoes = await _shoeService.ListShoesAsync((page - 1) * pageSize, pageSize);
+            int maxRowCountPerPage = int.Parse(_configuration["Paging:MaxRowCountPerShoePage"]); 
+            var totalRowCount = (await _shoeService.ListShoesAsync()).Count();
+            var shoes = await _shoeService.ListShoesAsync((page - 1) * maxRowCountPerPage, maxRowCountPerPage);
 
-           ShoeViewModel model = new ShoeViewModel(shoes, count, page, pageSize);
+           ShoeViewModel model = new ShoeViewModel(shoes, totalRowCount, page, maxRowCountPerPage);
 
             return View(model);
         }
@@ -35,7 +36,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
 
             if (shoe == null)
             {
-                return BadRequest(shoe);
+                return BadRequest($"The shoe with Id={id} is not found");
             }
 
             return View(shoe);

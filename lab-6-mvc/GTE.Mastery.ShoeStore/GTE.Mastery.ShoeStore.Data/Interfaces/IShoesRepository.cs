@@ -10,5 +10,7 @@ namespace GTE.Mastery.ShoeStore.Data.Interfaces
     public interface IShoesRepository : IRepository<Shoe>
     {
         IEnumerable<Shoe> GetShoes(int? skip = null, int? take = null);
+
+        bool IsUnique(int id, string name, int sizeId, int colorId);
     }
 }

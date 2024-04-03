@@ -32,7 +32,22 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
             }
         }
 
-        public MainDbContext Context => _context;
+        private IUserRepository _userRepository;
+
+        public IUserRepository Users
+        {
+            get
+            {
+                if (_userRepository == null)
+                {
+                    _userRepository = new UserRepository(_context);
+                }
+
+                return _userRepository;
+            }
+        }
+
+        public MainDbContext Context => _context;        
 
         public void Dispose()
         {

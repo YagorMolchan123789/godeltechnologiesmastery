@@ -2,9 +2,9 @@
 
 <div class="register-container">
     <h2>Registration</h2>
-    <form asp-controller="User" asp-action="Register" asp-antiforgery="true">
+    <form asp-controller="Account" asp-action="Register" asp-antiforgery="true">
         <div class="validation" asp-validation-summary="ModelOnly"></div>
-        <div>
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="FirstName">Firstname</label>
                 <input type="text" class="form-control" asp-for="FirstName" required/>
@@ -15,6 +15,8 @@
                 <input type="text" class="form-control" asp-for="LastName" required/>
                 <span asp-validation-for="LastName"></span>
             </div>
+        </div>
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="Country">Country</label>
                 <input type="text" class="form-control" asp-for="Country" required/>
@@ -25,29 +27,34 @@
                 <input type="text" class="form-control" asp-for="City" required/>
                 <span asp-validation-for="City"></span>
             </div>
+        </div>
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="PhoneNumber">Phone number</label>
-                <input type="text" class="form-control" asp-for="PhoneNumber" required/>
+                <input type="text" class="form-control" asp-for="PhoneNumber" required />
                 <span asp-validation-for="PhoneNumber"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Email">Email</label>
-                <input type="email" class="form-control" asp-for="Email" required/>
+                <input type="email" class="form-control" asp-for="Email" required />
                 <span asp-validation-for="Email"></span>
             </div>
+        </div>
+        <div class="field-container">
             <div class="form-group">
                 <label asp-for="Password">Password</label>
-                <input type="password" class="form-control" asp-for="Password" required/>
+                <input type="password" class="form-control" asp-for="Password" required />
                 <span asp-validation-for="Password"></span>
             </div>
             <div class="form-group">
                 <label asp-for="ConfirmPassword">Confirm password</label>
-                <input type="password" class="form-control" asp-for="ConfirmPassword" required/>
+                <input type="password" class="form-control" asp-for="ConfirmPassword" required />
                 <span asp-validation-for="ConfirmPassword"></span>
             </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Register</button>
-            </div>
+        </div>
+        <div class="submit-container">
+            <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Cancel</a>
+            <button type="submit" class="btn btn-success">Register</button>
         </div>
     </form>
 </div>

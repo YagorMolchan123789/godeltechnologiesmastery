@@ -16,6 +16,10 @@ html {
     position: relative;
 }
 
+.container-fluid{
+    height: 57px;
+}
+
 .home-container{
     text-align: center;
 }
@@ -57,13 +61,17 @@ header .navbar-nav .nav-item form input {
     position: relative;
 }
 
-.table-container td p
+.table-container td p, .table-container td img
 {
     position: absolute;
     top: 50%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%)
+}
+
+#homeTable tr{
+    height: 40px;
 }
 
 .shoe-create-edit-container {
@@ -75,26 +83,93 @@ header .navbar-nav .nav-item form input {
     text-align: center;
 }
 
-.shoe-field-container {
+.field-container {
     display: flex;
     width: 100%;
     justify-content: space-between;
 }
 
-.shoe-field-container .form-group, .shoe-field-container .gender-container{
+.field-container .form-group, .field-container .gender-container{
     width: 48%;
 }
 
+.login-container .field-container{
+    display: flex;
+}
+
+.register-container .field-container{
+    display: flex;
+}
+
+.register-container .field-container .form-group{
+    float: right;
+}
+
+.register-container .submit-container{
+    text-align: right;
+}
+
+.register-container .submit-container a, .register-container .submit-container button {
+    width: 20%;
+}
+
+.shoe-create-edit-container .submit-container {
+    text-align: right;
+}
+
+.shoe-create-edit-container .submit-container a, .shoe-create-edit-container .submit-container button {
+    width: 20%;
+}
+
+/*.field-container input[type="button"], .field-container input[type="submit"]{
+    width: 100%;
+}*/
+
+.shoe-wrapper{
+    position: relative;
+}
+
 .shoe-item{
-    margin-top: 3%;
+    position: absolute;
+    left: 30%;
+}
+
+.shoe-item{
+    margin-top: 2%;
     display: block;
 }
 
-.shoe-decription{
-    margin-top: 1%;
+.shoe-name{
+    height: 49px;
 }
 
-button[type="submit"]{
+.shoe-image{
+    height: 420px;
+}
+
+.shoe-description{
+    display: flex;
+    margin-top: 1%;
+    gap: 2%;
+}
+
+/*.shoe-decription div{
+    display: inline-block;
+}*/
+
+/*.shoe-submit-container input[type="button"], .shoe-submit-contaiiner input[type="submit"]{
+    width: 46%;
+}*/
+
+/*.shoe-submit-container button, .shoe-submit-container input[type="button"]{
+    width: 100%;
+}*/
+
+/*.register-container button[type="submit"], .login-container button[type="submit"]{
+    width: 100%;
+}*/
+
+.login-container .field-container a, .login-container .field-container button {
     width: 100%;
 }
 
@@ -125,6 +200,15 @@ button[type="submit"]{
     font: 16px Times New Roman;
 }
 
+.home-paragraph:first-child{
+    height: 35px;
+}
+
+.home-paragraph:last-child{
+    height: 56px;
+    font: 14px Times New Roman;
+}
+
 .price {
     color: #aa0000;
     font-size: 22px;
@@ -148,14 +232,50 @@ button[type="submit"]{
     text-align: center;
 }
 
-.shoe-list-container, .pagination{
-    maergin-left: 10%;
+.shoe-footer {
+    display: flex;
 }
 
-/*,login-container form{
-    position: absolute;
-    top: 50%;
-}*/
+.pagination{
+    float: right;
+    margin-right: 8%;
+}
+
+#navbarSupportedContent{
+    display: inline-flex;
+}
+
+.nav-container{
+    display: flex;
+}
+
+#shoeStoreIcon{
+    margin-left: 0;
+}
+
+.security-container{
+    list-style-type: none;
+    float: right;
+    margin-top: 1%;
+    margin-right: 4%;
+}
+
+.security-container li{
+    display: inline-block;
+}
+
+.admin-container{
+    margin-top: 1%;
+    list-style-type: none;
+}
+
+.admin-container li{
+    display: inline-block;
+}
+
+#shoeBack{
+    margin-top: 2%;
+}
 
 html {
   position: relative;

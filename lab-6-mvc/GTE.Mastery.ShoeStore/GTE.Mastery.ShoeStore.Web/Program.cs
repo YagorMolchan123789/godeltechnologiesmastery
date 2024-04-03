@@ -1,6 +1,5 @@
 using AutoMapper;
 using FluentValidation;
-using GTE.Mastery.ShoeStore.Business.Configurations;
 using GTE.Mastery.ShoeStore.Business.Profiles;
 using GTE.Mastery.ShoeStore.Business.Dtos;
 using GTE.Mastery.ShoeStore.Business.Validators;
@@ -12,7 +11,6 @@ using GTE.Mastery.ShoeStore.Business.Interfaces;
 using GTE.Mastery.ShoeStore.Business.Services;
 using GTE.Mastery.ShoeStore.Data.Interfaces;
 using GTE.Mastery.ShoeStore.Data.Repositories;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -24,16 +22,16 @@ builder.Services.AddDbContext<MainDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
     .UseLazyLoadingProxies());
 
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<MainDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    options.User.AllowedUserNameCharacters = null;
+}).AddEntityFrameworkStores<MainDbContext>()
+.AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = new PathString("/Error/403");
 });
-
-builder.Services.AddSession();
 
 var mapperConfig = new MapperConfiguration(mc =>
 {
@@ -44,28 +42,23 @@ var mapperConfig = new MapperConfiguration(mc =>
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
-builder.Services.AddScoped<IValidator<UpdateShoeDto>, ShoeDtoValidator>();
-builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
+builder.Services.AddScoped<IValidator<UpdateShoeDto>>( u =>
+    new UpdateShoeDtoValidator(u.GetRequiredService<IUnitOfWork>()));
+
+builder.Services.AddScoped<IValidator<RegisterDto>>(r => 
+    new RegisterValidator(r.GetRequiredService<IUnitOfWork>()));
 
 builder.Services.AddScoped<IRepository<Shoe>>(s =>
     new Repository<Shoe>(s.GetRequiredService<MainDbContext>()));
 
 builder.Services.AddScoped<IShoesRepository, ShoesRepository>();
 
-builder.Services.AddScoped<IRepositoryFactory<Size>>(r =>
-    new RepositoryFactory<Size>(r));
-
-builder.Services.AddScoped<IRepositoryFactory<Brand>>(r =>
-    new RepositoryFactory<Brand>(r));
-
-builder.Services.AddScoped<IRepositoryFactory<Category>>(r =>
-    new RepositoryFactory<Category>(r));
-
-builder.Services.AddScoped<IRepositoryFactory<Color>>(r =>
-    new RepositoryFactory<Color>(r));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IUnitOfWork>(u =>
     new UnitOfWork(u.GetRequiredService<MainDbContext>()));
+
+builder.Services.AddScoped<IDataHelper, DataHelper>();
 
 builder.Services.AddScoped<IShoeService, ShoeService>();
 
@@ -85,8 +78,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseSession();
 
 app.UseAuthentication();
 

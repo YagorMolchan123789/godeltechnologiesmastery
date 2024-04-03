@@ -8,88 +8,96 @@ using GTE.Mastery.ShoeStore.Domain.Enums;
 using GTE.Mastery.ShoeStore.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using GTE.Mastery.ShoeStore.Web.Filters;
 using GTE.Mastery.ShoeStore.Domain;
 using Microsoft.AspNetCore.Authorization;
+using GTE.Mastery.ShoeStore.Data.Interfaces;
+using System.Drawing;
+using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
 {
-    [ShoeStoreFilterAuthorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly IValidator<UpdateShoeDto> _validator;
+        private readonly IDataHelper _dataHelper;
         private readonly IConfiguration _configuration;
         private readonly IShoeService _shoeService;
 
-        private readonly IRepositoryFactory<Size> _sizeFactory;
-        private readonly IRepositoryFactory<Brand> _brandFactory;
-        private readonly IRepositoryFactory<Category> _categoryFactory;
-        private readonly IRepositoryFactory<Color> _colorFactory;
-
-        public AdminController(IValidator<UpdateShoeDto> validator, IConfiguration configuration,
-            IShoeService shoeService, IRepositoryFactory<Brand> brandFactory,
-            IRepositoryFactory<Category> categoryFactory, IRepositoryFactory<Color> colorFactory,
-            IRepositoryFactory<Size> sizeFactory)
+        public AdminController(IValidator<UpdateShoeDto> validator, IDataHelper dataHelper,
+            IConfiguration configuration, IShoeService shoeService)
         {
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+            _dataHelper = dataHelper ?? throw new ArgumentNullException(nameof(dataHelper));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _shoeService = shoeService ?? throw new ArgumentNullException(nameof(shoeService));
-            _brandFactory = brandFactory ?? throw new ArgumentNullException(nameof(brandFactory));
-            _categoryFactory = categoryFactory ?? throw new ArgumentNullException(nameof(categoryFactory));
-            _colorFactory = colorFactory ?? throw new ArgumentNullException(nameof(colorFactory));
-            _sizeFactory = sizeFactory ?? throw new ArgumentNullException(nameof(sizeFactory));
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(int page=1)
+        public async Task<IActionResult> Index(int page = 1)
         {
-            int pageSize = 6;
-            var count = (await _shoeService.ListShoesAsync()).Count();
-            var shoes = await _shoeService.ListShoesAsync((page - 1) * pageSize, pageSize);
+            int maxRowCountPerPage = int.Parse(_configuration["Paging:MaxRowCountPerShoePage"]);
 
-            ShoeViewModel model = new ShoeViewModel(shoes, count, page, pageSize);
+            var totalPageCount = (await _shoeService.ListShoesAsync()).Count();
+            var shoes = await _shoeService.ListShoesAsync((page - 1) * maxRowCountPerPage, maxRowCountPerPage);
+
+            ShoeViewModel model = new ShoeViewModel(shoes, totalPageCount, page, maxRowCountPerPage);
 
             return View(model);
         }
 
         [HttpGet]
-        public IActionResult CreateShoe()
+        public IActionResult CreateShoe(int totalRowCount, int maxRowCountPerPage, int totalPageCount)
         {
+            ViewBag.TotalRowCount = totalRowCount; //total row count
+            ViewBag.MaxRowCountPerPage = maxRowCountPerPage; // max row count per page
+            ViewBag.TotalPageCount = totalPageCount; // total page count 
+
             UpdateShoeDto shoeDto = new UpdateShoeDto();
-            InitializeDto();
+            InitializeDto(shoeDto);
+
             return View(shoeDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateShoe([FromForm] UpdateShoeDto shoeDto)
+        public async Task<IActionResult> CreateShoe(int totalRowCount, int maxRowCountPerPage, int totalPageCount, UpdateShoeDto shoeDto)
         {
             ValidationResult validationResult = _validator.Validate(shoeDto);
 
             if (!validationResult.IsValid)
             {
                 validationResult.AddToModelState(ModelState);
-                InitializeDto();
-                return View(shoeDto);
+                InitializeDto(shoeDto);
+
+                return RedirectToAction("CreateShoe", new { totalRowCount, maxRowCountPerPage, totalPageCount });
             }
 
             if (string.IsNullOrEmpty(shoeDto.ImagePath))
             {
                 shoeDto.ImagePath = _configuration.GetSection("DefaultImagePath").Value;
-            }            
+            }
 
             var shoe = await _shoeService.CreateShoeAsync(shoeDto);
 
-            if (shoe != null)
+            if (shoe == null)
             {
-                return RedirectToAction("Index");
+                return BadRequest("The shoe has not been created successfully");
             }
 
-            return BadRequest(shoe);
+            if (totalRowCount % maxRowCountPerPage == 0)
+            {
+                return RedirectToAction("Index", new { page = totalPageCount + 1 });
+            }
+
+            return RedirectToAction("Index", new { page = totalPageCount });
         }
 
         [HttpGet]
-        public async Task<IActionResult> EditShoe([FromRoute] int id)
+        public async Task<IActionResult> EditShoe(int id, int page)
         {
+            ViewBag.CurrentPage = page;
+
             var shoe = await _shoeService.GetShoeAsync(id);
 
             if (shoe != null)
@@ -108,7 +116,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                     ColorId = shoe.ColorId
                 };
 
-                InitializeDto();
+                InitializeDto(shoeDto);
 
                 return View(shoeDto);
             }
@@ -117,45 +125,50 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditShoe([FromRoute] int id,  [FromForm] UpdateShoeDto shoeDto)
+        public async Task<IActionResult> EditShoe(int id, int page, UpdateShoeDto shoeDto)
         {
             ValidationResult validationResult = _validator.Validate(shoeDto);
 
             if (!validationResult.IsValid)
             {
                 validationResult.AddToModelState(ModelState);
-                InitializeDto();
-                return View(shoeDto);
+                InitializeDto(shoeDto);
+
+                return RedirectToAction("EditShoe", new { id = shoeDto.Id, page});
             }
 
-            var shoe = _shoeService.UpdateShoeAsync(id,shoeDto);
+            var shoe = await _shoeService.UpdateShoeAsync(id, shoeDto);
 
             if (shoe != null)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { page });
             }
 
-            return BadRequest(shoe);
+            return BadRequest($"The shoe with Id={id} has not been updated successfully");
         }
-
-        public async Task<IActionResult> DeleteShoe([FromRoute] int id)
+                
+        [HttpPost]
+        public async Task<IActionResult> DeleteShoe(ShoeDto shoeDto, int page, int totalPageCount, int totalRowCount, int maxRowCountPerPage)
         {
-            await _shoeService.DeleteShoeAsync(id);
-            return RedirectToAction("Index");
-        }
+            await _shoeService.DeleteShoeAsync(shoeDto.Id);
 
-        private void InitializeDto()
-        {
-            ViewBag.Genders = Enum.GetValues(typeof(Gender)).Cast<Gender>().Select(v => new SelectListItem
+            if (page == totalPageCount && totalRowCount % maxRowCountPerPage == 1)
             {
-                Text = v.ToString(),
-                Value = ((int)v).ToString()
-            }).ToList();
+                return RedirectToAction("Index", new { page = totalPageCount - 1 });
+            }
 
-            ViewBag.Sizes = new SelectList(_sizeFactory.GetEntities(), "Id", "Value");
-            ViewBag.Brands = new SelectList(_brandFactory.GetEntities(), "Id", "Name");
-            ViewBag.Categories = new SelectList(_categoryFactory.GetEntities(), "Id", "Name");
-            ViewBag.Colors = new SelectList(_colorFactory.GetEntities(), "Id", "Name");
+            return RedirectToAction("Index", new { page });
+        }
+
+        private void InitializeDto(UpdateShoeDto shoeDto)
+        {
+            shoeDto.Genders = Enum.GetValues<Gender>().ToList();
+            ShoeViewData shoeViewData = _dataHelper.GetViewData();
+
+            shoeDto.Brands = shoeViewData.Brands;
+            shoeDto.Categories = shoeViewData.Categories;
+            shoeDto.Sizes = shoeViewData.Sizes;
+            shoeDto.Colors = shoeViewData.Colors;
         }
     }
 }

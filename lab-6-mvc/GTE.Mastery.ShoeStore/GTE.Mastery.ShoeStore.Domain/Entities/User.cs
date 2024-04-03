@@ -17,6 +17,14 @@ namespace GTE.Mastery.ShoeStore.Domain.Entities
 
         public string City { get; set; }
 
+        public override string UserName
+        {
+            get
+            {
+                return FirstName + " " + LastName;
+            }
+        }
+
         public User(string firstName, string lastName, string country, string city, string email, string phoneNumber)
         {
             FirstName = firstName;
