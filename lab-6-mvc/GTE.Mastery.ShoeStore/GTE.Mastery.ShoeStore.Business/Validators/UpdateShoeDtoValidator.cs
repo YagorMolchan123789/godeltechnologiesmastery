@@ -18,7 +18,8 @@ namespace GTE.Mastery.ShoeStore.Business.Validators
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
 
-            RuleFor(s => s.Name).NotEmpty().NotNull().WithMessage("Name is required");
+            RuleFor(s => s.Name).NotEmpty().NotNull().WithMessage("Name is required")
+                .MaximumLength(50).WithMessage("The length of Name must be not more than 50 characters");
 
             RuleFor(s => s.Vendor).NotEmpty().NotNull().WithMessage("Vendor number is required");
 

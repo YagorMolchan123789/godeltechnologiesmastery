@@ -37,6 +37,8 @@ namespace GTE.Mastery.ShoeStore.Domain.Entities
 
         public decimal Price { get; set; }
 
+        public Shoe() { }
+
         public Shoe(string name, string vendor, decimal price, string imagePath, Gender gender, int brandId, int categoryId, int colorId, int sizeId)
         {
             Name = name;

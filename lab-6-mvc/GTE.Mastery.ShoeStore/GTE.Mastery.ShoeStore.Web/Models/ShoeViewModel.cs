@@ -4,17 +4,17 @@ namespace GTE.Mastery.ShoeStore.Web.Models
 {
     public class ShoeViewModel
     {
-        public int CurrentPage { get; set; } // current page
+        public int CurrentPage { get; set; }
 
-        public int TotalPageCount { get; set; } // total page row count
+        public int TotalPageCount { get; set; }
 
-        public int TotalRowCount { get; set; } // total row count
+        public int TotalRowCount { get; set; }
         
-        public int MaxRowCountPerPage { get; set; } // max row count per single page
+        public int MaxRowCountPerPage { get; set; }
 
-        public bool HasPreviousPage => CurrentPage > 1; // checks whether current page has previous page
+        public bool HasPreviousPage => CurrentPage > 1;
 
-        public bool HasNextPage => CurrentPage < TotalPageCount; // checks whether current page has next page
+        public bool HasNextPage => CurrentPage < TotalPageCount; 
 
         public IEnumerable<ShoeDto> Shoes { get; set; }
 

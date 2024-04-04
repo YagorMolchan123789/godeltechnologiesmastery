@@ -1,6 +1,4 @@
 ﻿using GTE.Mastery.ShoeStore.Domain.Enums;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +8,7 @@ using GTE.Mastery.ShoeStore.Domain.Entities;
 
 namespace GTE.Mastery.ShoeStore.Business.Dtos
 {
-    public record ShoeViewData (List<Category> Categories, List<Brand> Brands, List<Size> Sizes, List<Color> Colors);
+    public record ShoeAuxillaryData (List<Category> Categories, List<Brand> Brands, List<Size> Sizes, List<Color> Colors);
 
     public class UpdateShoeDto
     {

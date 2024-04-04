@@ -21,7 +21,7 @@ namespace GTE.Mastery.ShoeStore.Domain.Entities
         {
             get
             {
-                return FirstName + " " + LastName;
+                return $"{FirstName} {LastName}";
             }
         }
 

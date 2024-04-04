@@ -9,6 +9,6 @@ namespace GTE.Mastery.ShoeStore.Business.Interfaces
 {
     public interface IDataHelper
     {
-        ShoeViewData GetViewData();
+        ShoeAuxillaryData GetAuxillaryData();
     }
 }

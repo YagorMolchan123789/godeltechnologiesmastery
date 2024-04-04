@@ -1,7 +1,7 @@
 ﻿@model GTE.Mastery.ShoeStore.Web.Models.ShoeViewModel 
 <div class="admin-container">
     <div class="admin-header">
-        <a class="btn btn-success" asp-controller="Home" asp-action="Index">Exit</a>
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Exit</a>
         <a class="btn btn-success" asp-controller="Admin" asp-action="CreateShoe" asp-route-totalRowCount="@Model.TotalRowCount" asp-route-maxRowCountPerPage="@Model.MaxRowCountPerPage"
            asp-route-totalPageCount="@Model.TotalPageCount">Add new shoe</a>
     </div>    

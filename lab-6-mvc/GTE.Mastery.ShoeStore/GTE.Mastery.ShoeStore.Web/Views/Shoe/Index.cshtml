@@ -1,8 +1,8 @@
 ﻿@model GTE.Mastery.ShoeStore.Web.Models.ShoeViewModel
 
+<a class="btn btn-primary" asp-controller="Home" asp-action="Index">Exit</a>
 @if(Model.Shoes.Count()>0)
-{
-    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Exit</a>
+{    
     <div class="shoe-list-container">
         <div class="row">
             @foreach (var item in Model.Shoes)

@@ -11,6 +11,7 @@ using GTE.Mastery.ShoeStore.Business.Interfaces;
 using GTE.Mastery.ShoeStore.Business.Services;
 using GTE.Mastery.ShoeStore.Data.Interfaces;
 using GTE.Mastery.ShoeStore.Data.Repositories;
+using GTE.Mastery.ShoeStore.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -21,6 +22,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MainDbContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
     .UseLazyLoadingProxies());
+
+builder.Services.Configure<PagingOptions>(configuration.GetSection("Paging"));
+builder.Services.Configure<ImageOptions>(configuration.GetSection("Image"));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -48,9 +52,6 @@ builder.Services.AddScoped<IValidator<UpdateShoeDto>>( u =>
 builder.Services.AddScoped<IValidator<RegisterDto>>(r => 
     new RegisterValidator(r.GetRequiredService<IUnitOfWork>()));
 
-builder.Services.AddScoped<IRepository<Shoe>>(s =>
-    new Repository<Shoe>(s.GetRequiredService<MainDbContext>()));
-
 builder.Services.AddScoped<IShoesRepository, ShoesRepository>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -63,6 +64,11 @@ builder.Services.AddScoped<IDataHelper, DataHelper>();
 builder.Services.AddScoped<IShoeService, ShoeService>();
 
 var app = builder.Build();
+
+using var scope = app.Services.CreateScope();
+
+var dbContext = scope.ServiceProvider.GetRequiredService<MainDbContext>();
+dbContext.Database.Migrate();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -10,14 +10,14 @@ namespace GTE.Mastery.ShoeStore.Business.Interfaces
 {
     public interface IShoeService
     {
-        Task<IEnumerable<ShoeDto>> ListShoesAsync(int? skip = null, int? take = null);
+        Task<IEnumerable<ShoeDto>> ListAsync(int? skip = null, int? take = null);
 
-        Task<ShoeDto> GetShoeAsync(int shoeId);
+        Task<ShoeDto> GetAsync(int shoeId);
 
-        Task<Shoe> CreateShoeAsync(UpdateShoeDto shoeDto);
+        Task<Shoe> CreateAsync(UpdateShoeDto shoeDto);
 
-        Task<Shoe> UpdateShoeAsync(int id, UpdateShoeDto shoeDto);
+        Task<Shoe> UpdateAsync(int id, UpdateShoeDto shoeDto);
 
-        Task DeleteShoeAsync(int shoeId);
+        Task DeleteAsync(int shoeId);
     }
 }

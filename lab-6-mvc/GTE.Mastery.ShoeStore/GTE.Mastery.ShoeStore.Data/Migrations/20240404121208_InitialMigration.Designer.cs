@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GTE.Mastery.ShoeStore.Data.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20240403155847_InitialMigration")]
+    [Migration("20240404121208_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -175,11 +175,11 @@ namespace GTE.Mastery.ShoeStore.Data.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");

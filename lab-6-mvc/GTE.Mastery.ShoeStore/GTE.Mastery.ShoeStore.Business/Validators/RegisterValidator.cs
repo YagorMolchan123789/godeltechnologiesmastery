@@ -29,9 +29,11 @@ namespace GTE.Mastery.ShoeStore.Business.Validators
             RuleFor(r => r.LastName).NotEmpty().NotNull().WithMessage("LastName is required")
                 .MaximumLength(20).WithMessage("The length of LastName must be not more than 20 characters");
 
-            RuleFor(r => r.Country).NotEmpty().NotNull().WithMessage("Country is required");
+            RuleFor(r => r.Country).NotEmpty().NotNull().WithMessage("Country is required")
+                .MaximumLength(20).WithMessage("The length of Country must be not more than 20 characters");
 
-            RuleFor(r => r.City).NotEmpty().NotNull().WithMessage("City is required");
+            RuleFor(r => r.City).NotEmpty().NotNull().WithMessage("City is required")
+                .MaximumLength(20).WithMessage("The length of City must be not more than 20 characters");
 
             RuleFor(r => r.PhoneNumber).NotEmpty().NotNull().WithMessage("PhoneNumber is required")
                 .Matches(_phoneNumberRegex).WithMessage("Incorrect input of PhoneNumber");

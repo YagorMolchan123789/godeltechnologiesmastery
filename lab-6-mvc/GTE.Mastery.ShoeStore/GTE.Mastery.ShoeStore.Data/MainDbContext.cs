@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Color = GTE.Mastery.ShoeStore.Domain.Entities.Color;
 using Size = GTE.Mastery.ShoeStore.Domain.Entities.Size;
 using Microsoft.AspNetCore.Identity;
-using GTE.Mastery.ShoeStore.Domain;
-using GTE.Mastery.ShoeStore.Domain.Enums;
 
 namespace GTE.Mastery.ShoeStore.Data
 {
@@ -30,12 +28,12 @@ namespace GTE.Mastery.ShoeStore.Data
         {
             builder.Entity<User>()
                 .Property(u => u.FirstName)
-                .HasColumnType("nvarchar(50)")
+                .HasColumnType("nvarchar(20)")
                 .IsRequired();
 
             builder.Entity<User>()
                 .Property(u => u.LastName)
-                .HasColumnType("nvarchar(50)")
+                .HasColumnType("nvarchar(20)")
                 .IsRequired();
 
             builder.Entity<User>()

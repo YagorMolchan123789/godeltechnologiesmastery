@@ -121,10 +121,6 @@ header .navbar-nav .nav-item form input {
     width: 20%;
 }
 
-/*.field-container input[type="button"], .field-container input[type="submit"]{
-    width: 100%;
-}*/
-
 .shoe-wrapper{
     position: relative;
 }
@@ -152,22 +148,6 @@ header .navbar-nav .nav-item form input {
     margin-top: 1%;
     gap: 2%;
 }
-
-/*.shoe-decription div{
-    display: inline-block;
-}*/
-
-/*.shoe-submit-container input[type="button"], .shoe-submit-contaiiner input[type="submit"]{
-    width: 46%;
-}*/
-
-/*.shoe-submit-container button, .shoe-submit-container input[type="button"]{
-    width: 100%;
-}*/
-
-/*.register-container button[type="submit"], .login-container button[type="submit"]{
-    width: 100%;
-}*/
 
 .login-container .field-container a, .login-container .field-container button {
     width: 100%;

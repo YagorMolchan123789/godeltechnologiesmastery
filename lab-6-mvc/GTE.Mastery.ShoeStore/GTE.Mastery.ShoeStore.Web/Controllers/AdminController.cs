@@ -3,44 +3,41 @@ using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using GTE.Mastery.ShoeStore.Business.Dtos;
 using GTE.Mastery.ShoeStore.Business.Interfaces;
-using GTE.Mastery.ShoeStore.Domain.Entities;
 using GTE.Mastery.ShoeStore.Domain.Enums;
 using GTE.Mastery.ShoeStore.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using GTE.Mastery.ShoeStore.Domain;
 using Microsoft.AspNetCore.Authorization;
-using GTE.Mastery.ShoeStore.Data.Interfaces;
-using System.Drawing;
-using Microsoft.Identity.Client;
-using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.Options;
+using GTE.Mastery.ShoeStore.Web.Configurations;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = nameof(RoleTypes.Admin))]
     public class AdminController : Controller
     {
         private readonly IValidator<UpdateShoeDto> _validator;
         private readonly IDataHelper _dataHelper;
-        private readonly IConfiguration _configuration;
+        private readonly ImageOptions _imageOptions;
+        private readonly PagingOptions _pagingOptions;
         private readonly IShoeService _shoeService;
 
         public AdminController(IValidator<UpdateShoeDto> validator, IDataHelper dataHelper,
-            IConfiguration configuration, IShoeService shoeService)
+            IOptions<PagingOptions> pagingOptions, IOptions<ImageOptions> imageOptions, IShoeService shoeService)
         {
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
             _dataHelper = dataHelper ?? throw new ArgumentNullException(nameof(dataHelper));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _imageOptions = imageOptions.Value ?? throw new ArgumentNullException(nameof(imageOptions.Value));
+            _pagingOptions = pagingOptions.Value ?? throw new ArgumentNullException(nameof(pagingOptions.Value));
             _shoeService = shoeService ?? throw new ArgumentNullException(nameof(shoeService));
         }
 
         [HttpGet]
         public async Task<IActionResult> Index(int page = 1)
         {
-            int maxRowCountPerPage = int.Parse(_configuration["Paging:MaxRowCountPerShoePage"]);
+            int maxRowCountPerPage = _pagingOptions.MaxRowCountPerShoePage;
 
-            var totalPageCount = (await _shoeService.ListShoesAsync()).Count();
-            var shoes = await _shoeService.ListShoesAsync((page - 1) * maxRowCountPerPage, maxRowCountPerPage);
+            var totalPageCount = (await _shoeService.ListAsync()).Count();
+            var shoes = await _shoeService.ListAsync((page - 1) * maxRowCountPerPage, maxRowCountPerPage);
 
             ShoeViewModel model = new ShoeViewModel(shoes, totalPageCount, page, maxRowCountPerPage);
 
@@ -50,11 +47,9 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         [HttpGet]
         public IActionResult CreateShoe(int totalRowCount, int maxRowCountPerPage, int totalPageCount)
         {
-            ViewBag.TotalRowCount = totalRowCount; //total row count
-            ViewBag.MaxRowCountPerPage = maxRowCountPerPage; // max row count per page
-            ViewBag.TotalPageCount = totalPageCount; // total page count 
-
             UpdateShoeDto shoeDto = new UpdateShoeDto();
+
+            InitializePageParameters(totalRowCount, maxRowCountPerPage, totalPageCount);
             InitializeDto(shoeDto);
 
             return View(shoeDto);
@@ -68,17 +63,19 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
             if (!validationResult.IsValid)
             {
                 validationResult.AddToModelState(ModelState);
+
+                InitializePageParameters(totalRowCount, maxRowCountPerPage, totalPageCount);
                 InitializeDto(shoeDto);
 
-                return RedirectToAction("CreateShoe", new { totalRowCount, maxRowCountPerPage, totalPageCount });
+                return View(shoeDto);
             }
 
             if (string.IsNullOrEmpty(shoeDto.ImagePath))
             {
-                shoeDto.ImagePath = _configuration.GetSection("DefaultImagePath").Value;
+                shoeDto.ImagePath = _imageOptions.DefaultPath;
             }
 
-            var shoe = await _shoeService.CreateShoeAsync(shoeDto);
+            var shoe = await _shoeService.CreateAsync(shoeDto);
 
             if (shoe == null)
             {
@@ -98,7 +95,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         {
             ViewBag.CurrentPage = page;
 
-            var shoe = await _shoeService.GetShoeAsync(id);
+            var shoe = await _shoeService.GetAsync(id);
 
             if (shoe != null)
             {
@@ -116,6 +113,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                     ColorId = shoe.ColorId
                 };
 
+                InitializePageParameters(page);
                 InitializeDto(shoeDto);
 
                 return View(shoeDto);
@@ -132,12 +130,14 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
             if (!validationResult.IsValid)
             {
                 validationResult.AddToModelState(ModelState);
+                
+                InitializePageParameters(page);
                 InitializeDto(shoeDto);
 
-                return RedirectToAction("EditShoe", new { id = shoeDto.Id, page});
+                return View(shoeDto);
             }
 
-            var shoe = await _shoeService.UpdateShoeAsync(id, shoeDto);
+            var shoe = await _shoeService.UpdateAsync(id, shoeDto);
 
             if (shoe != null)
             {
@@ -150,7 +150,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteShoe(ShoeDto shoeDto, int page, int totalPageCount, int totalRowCount, int maxRowCountPerPage)
         {
-            await _shoeService.DeleteShoeAsync(shoeDto.Id);
+            await _shoeService.DeleteAsync(shoeDto.Id);
 
             if (page == totalPageCount && totalRowCount % maxRowCountPerPage == 1)
             {
@@ -163,12 +163,25 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
         private void InitializeDto(UpdateShoeDto shoeDto)
         {
             shoeDto.Genders = Enum.GetValues<Gender>().ToList();
-            ShoeViewData shoeViewData = _dataHelper.GetViewData();
 
-            shoeDto.Brands = shoeViewData.Brands;
-            shoeDto.Categories = shoeViewData.Categories;
-            shoeDto.Sizes = shoeViewData.Sizes;
-            shoeDto.Colors = shoeViewData.Colors;
+            ShoeAuxillaryData shoeAuxillaryData = _dataHelper.GetAuxillaryData();
+            
+            shoeDto.Brands = shoeAuxillaryData.Brands;
+            shoeDto.Categories = shoeAuxillaryData.Categories;
+            shoeDto.Sizes = shoeAuxillaryData.Sizes;
+            shoeDto.Colors = shoeAuxillaryData.Colors;
+        }
+
+        private void InitializePageParameters(int totalRowCount, int maxRowCountPerPage, int totalPageCount)
+        {
+            ViewBag.TotalRowCount = totalRowCount;
+            ViewBag.MaxRowCountPerPage = maxRowCountPerPage;
+            ViewBag.TotalPageCount = totalPageCount;
+        }
+
+        private void InitializePageParameters(int currentPage)
+        {
+            ViewBag.CurrentPage = currentPage;
         }
     }
 }

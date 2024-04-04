@@ -1,7 +1,9 @@
 using GTE.Mastery.ShoeStore.Business.Interfaces;
+using GTE.Mastery.ShoeStore.Web.Configurations;
 using GTE.Mastery.ShoeStore.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 
 namespace GTE.Mastery.ShoeStore.Web.Controllers
@@ -9,19 +11,19 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
     public class HomeController : Controller
     {
         private readonly IShoeService _shoeService;
-        private readonly IConfiguration _configuration; 
+        private readonly PagingOptions _pagingOptions;
 
-        public HomeController(IShoeService shoeService, IConfiguration configuration)
+        public HomeController(IShoeService shoeService, IOptions<PagingOptions> pagingOptions)
         {
             _shoeService = shoeService ?? throw new ArgumentNullException(nameof(shoeService));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration)); 
+            _pagingOptions = pagingOptions.Value ?? throw new ArgumentNullException(nameof(pagingOptions.Value));
         }
 
         public async Task<IActionResult> Index()
         {
-            int maxRowCountPerHomePage = int.Parse(_configuration["Paging:MaxRowCountPerHomePage"]);
+            int maxRowCountPerPage = _pagingOptions.MaxRowCountPerHomePage;
 
-            var shoes = await _shoeService.ListShoesAsync(take: maxRowCountPerHomePage);
+            var shoes = await _shoeService.ListAsync(take: maxRowCountPerPage);
             return View(shoes);
         }
 

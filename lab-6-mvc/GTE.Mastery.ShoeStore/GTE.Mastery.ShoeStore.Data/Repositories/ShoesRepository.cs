@@ -1,23 +1,21 @@
 ﻿using GTE.Mastery.ShoeStore.Data.Interfaces;
 using GTE.Mastery.ShoeStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace GTE.Mastery.ShoeStore.Data.Repositories
 {
-    public class ShoesRepository : Repository<Shoe>, IShoesRepository
+    public class ShoesRepository : IShoesRepository
     {
-        public ShoesRepository(MainDbContext context) : base(context)
-        {
+        private readonly MainDbContext _dbContext;
 
+        public ShoesRepository(MainDbContext dbContext)
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public bool IsUnique(int id, string name, int sizeId, int colorId)
         {
-            Shoe shoe = _context.Set<Shoe>().FirstOrDefault(s => s.Name == name && s.SizeId == sizeId && s.ColorId == colorId);
+            Shoe shoe = _dbContext.Set<Shoe>().FirstOrDefault(s => s.Name == name && s.SizeId == sizeId && s.ColorId == colorId);
 
             if (shoe != null && shoe.Id != id)
             {
@@ -27,9 +25,9 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
             return true;
         }
 
-        public IEnumerable<Shoe> GetShoes(int? skip = null, int? take = null)
+        public IEnumerable<Shoe> Get(int? skip = null, int? take = null)
         {
-            var query = _context.Set<Shoe>().AsQueryable();
+            var query = _dbContext.Set<Shoe>().AsQueryable();
 
             if (skip != null && skip > 0)
             {
@@ -42,6 +40,27 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
             }
 
             return query?.ToList();
+        }
+
+        public Shoe Get(int id)
+        {
+            return _dbContext.Set<Shoe>().Find(id);
+        }
+
+        public void Add(Shoe shoe)
+        {
+            _dbContext.Add(shoe);
+        }
+
+        public void Update(Shoe shoe)
+        {
+            _dbContext.Update(shoe);
+        }
+
+        public void Delete(int id)
+        {
+            var shoe = _dbContext.Set<Shoe>().Attach(new Shoe { Id = id });
+            shoe.State = EntityState.Deleted;
         }
     }
 }

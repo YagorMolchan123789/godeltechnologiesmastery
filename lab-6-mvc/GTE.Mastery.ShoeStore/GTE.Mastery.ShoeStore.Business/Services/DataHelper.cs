@@ -19,16 +19,16 @@ namespace GTE.Mastery.ShoeStore.Business.Services
             _unitOfWork = unitOfWork;
         }
 
-        public ShoeViewData GetViewData()
+        public ShoeAuxillaryData GetAuxillaryData()
         {
-            ShoeViewData shoeViewData = new(
+            ShoeAuxillaryData shoeAuxillaryData = new(
                 _unitOfWork.Context.Set<Category>().ToList(),
                 _unitOfWork.Context.Set<Brand>().ToList(),
                 _unitOfWork.Context.Set<Size>().ToList(),
                 _unitOfWork.Context.Set<Color>().ToList()
             );
             
-            return shoeViewData;
+            return shoeAuxillaryData;
         }
     }
 }

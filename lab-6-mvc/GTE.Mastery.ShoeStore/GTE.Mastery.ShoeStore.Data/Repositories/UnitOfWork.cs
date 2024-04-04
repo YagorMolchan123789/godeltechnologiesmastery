@@ -1,20 +1,14 @@
 ﻿using GTE.Mastery.ShoeStore.Data.Interfaces;
-using GTE.Mastery.ShoeStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GTE.Mastery.ShoeStore.Data.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly MainDbContext _context;
+        private readonly MainDbContext _dbContext;
 
-        public UnitOfWork(MainDbContext context)
+        public UnitOfWork(MainDbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
         private IShoesRepository _shoeRepository;
@@ -25,7 +19,7 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
             {
                 if (_shoeRepository == null)
                 {
-                    _shoeRepository = new ShoesRepository(_context);
+                    _shoeRepository = new ShoesRepository(_dbContext);
                 }
 
                 return _shoeRepository;
@@ -40,23 +34,23 @@ namespace GTE.Mastery.ShoeStore.Data.Repositories
             {
                 if (_userRepository == null)
                 {
-                    _userRepository = new UserRepository(_context);
+                    _userRepository = new UserRepository(_dbContext);
                 }
 
                 return _userRepository;
             }
         }
 
-        public MainDbContext Context => _context;        
+        public MainDbContext Context => _dbContext;        
 
         public void Dispose()
         {
-            _context.Dispose();
+            _dbContext.Dispose();
         }
 
         public void SaveChanges()
         {
-            _context.SaveChanges();
+            _dbContext.SaveChanges();
         }
     }
 }
