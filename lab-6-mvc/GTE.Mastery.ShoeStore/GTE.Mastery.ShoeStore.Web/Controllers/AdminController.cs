@@ -50,7 +50,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
             UpdateShoeDto shoeDto = new UpdateShoeDto();
 
             InitializePageParameters(totalRowCount, maxRowCountPerPage, totalPageCount);
-            InitializeDto(shoeDto);
+            GetAuxillaryData(shoeDto);
 
             return View(shoeDto);
         }
@@ -65,7 +65,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 validationResult.AddToModelState(ModelState);
 
                 InitializePageParameters(totalRowCount, maxRowCountPerPage, totalPageCount);
-                InitializeDto(shoeDto);
+                GetAuxillaryData(shoeDto);
 
                 return View(shoeDto);
             }
@@ -114,7 +114,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 };
 
                 InitializePageParameters(page);
-                InitializeDto(shoeDto);
+                GetAuxillaryData(shoeDto);
 
                 return View(shoeDto);
             }
@@ -132,7 +132,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
                 validationResult.AddToModelState(ModelState);
                 
                 InitializePageParameters(page);
-                InitializeDto(shoeDto);
+                GetAuxillaryData(shoeDto);
 
                 return View(shoeDto);
             }
