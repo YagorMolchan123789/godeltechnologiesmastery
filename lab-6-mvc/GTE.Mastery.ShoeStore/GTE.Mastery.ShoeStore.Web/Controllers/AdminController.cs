@@ -160,7 +160,7 @@ namespace GTE.Mastery.ShoeStore.Web.Controllers
             return RedirectToAction("Index", new { page });
         }
 
-        private void InitializeDto(UpdateShoeDto shoeDto)
+        private void GetAuxillaryData(UpdateShoeDto shoeDto)
         {
             shoeDto.Genders = Enum.GetValues<Gender>().ToList();
 
