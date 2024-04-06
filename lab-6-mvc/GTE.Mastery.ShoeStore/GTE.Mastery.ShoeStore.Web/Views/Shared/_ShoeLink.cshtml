@@ -1,0 +1,15 @@
+﻿@model GTE.Mastery.ShoeStore.Business.Dtos.ShoeDto
+
+<div class="col-xs-4">
+    <a asp-controller="Shoe" asp-action="GetShoe" asp-route-id="@Model.Id">
+        <img src="/img/@Model.ImagePath" width="250px" height="250px"/>
+    </a>
+    <div>
+        <div>
+            <span class="price">@Model.Price</span>
+        </div>
+        <div>
+            <span class="brand">@Model.Brand.Name - @Model.Name</span>
+        </div>
+    </div>
+</div>

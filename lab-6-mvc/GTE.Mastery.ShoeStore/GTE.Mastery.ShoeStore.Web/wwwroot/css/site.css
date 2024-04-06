@@ -1,0 +1,271 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.container {
+    position: relative;
+}
+
+.container-fluid{
+    height: 57px;
+}
+
+.home-container{
+    text-align: center;
+}
+
+header .container-fluid .justify-content-end{
+    margin-right: 10%;
+    float: right;
+}
+
+header .navbar-nav .nav-item form{
+    height: 100%;
+    position: relative;
+}
+
+header .navbar-nav .nav-item form input {
+    height: 100%;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%)
+}
+
+.contact-header p{
+    font: bolder 21px "Times New Roman";
+}
+
+.contact-body p {
+    font: 18px "Times New Roman";
+}
+
+.table-container{
+    width:  100%;
+}
+
+.table-container th{
+    text-align: center;
+}
+
+.table-container td{
+    position: relative;
+}
+
+.table-container td p, .table-container td img
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
+}
+
+#homeTable tr{
+    height: 40px;
+}
+
+.shoe-create-edit-container {
+    margin: auto;
+    width: 60%;
+}
+
+.shoe-create-edit-container h3{
+    text-align: center;
+}
+
+.field-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.field-container .form-group, .field-container .gender-container{
+    width: 48%;
+}
+
+.login-container .field-container{
+    display: flex;
+}
+
+.register-container .field-container{
+    display: flex;
+}
+
+.register-container .field-container .form-group{
+    float: right;
+}
+
+.register-container .submit-container{
+    text-align: right;
+}
+
+.register-container .submit-container a, .register-container .submit-container button {
+    width: 20%;
+}
+
+.shoe-create-edit-container .submit-container {
+    text-align: right;
+}
+
+.shoe-create-edit-container .submit-container a, .shoe-create-edit-container .submit-container button {
+    width: 20%;
+}
+
+.shoe-wrapper{
+    position: relative;
+}
+
+.shoe-item{
+    position: absolute;
+    left: 30%;
+}
+
+.shoe-item{
+    margin-top: 2%;
+    display: block;
+}
+
+.shoe-name{
+    height: 49px;
+}
+
+.shoe-image{
+    height: 420px;
+}
+
+.shoe-description{
+    display: flex;
+    margin-top: 1%;
+    gap: 2%;
+}
+
+.login-container .field-container a, .login-container .field-container button {
+    width: 100%;
+}
+
+.register-container{
+    margin: auto;
+    width: 70%;
+}
+
+.register-container h2, .login-container h2{
+    text-align: center;
+}
+
+.login-container {
+    margin: auto;
+    width: 40%;
+}
+
+.admin-container a{
+    margin-top: 3%;
+    margin-bottom: 3%;
+}
+
+.home-header{
+    margin-top: 3%;
+}
+
+.home-paragraph{
+    font: 16px Times New Roman;
+}
+
+.home-paragraph:first-child{
+    height: 35px;
+}
+
+.home-paragraph:last-child{
+    height: 56px;
+    font: 14px Times New Roman;
+}
+
+.price {
+    color: #aa0000;
+    font-size: 22px;
+}
+
+.brand {
+    color: #484848;
+    font-size: 16px;
+}
+
+.validation-summary-errors li{
+    color: red;
+    list-style-type: none;
+}
+
+.validation-summary-errors ul{
+    padding: 0;
+}
+
+.shoe-list-header p{
+    text-align: center;
+}
+
+.shoe-footer {
+    display: flex;
+}
+
+.pagination{
+    float: right;
+    margin-right: 8%;
+}
+
+#navbarSupportedContent{
+    display: inline-flex;
+}
+
+.nav-container{
+    display: flex;
+}
+
+#shoeStoreIcon{
+    margin-left: 0;
+}
+
+.security-container{
+    list-style-type: none;
+    float: right;
+    margin-top: 1%;
+    margin-right: 4%;
+}
+
+.security-container li{
+    display: inline-block;
+}
+
+.admin-container{
+    margin-top: 1%;
+    list-style-type: none;
+}
+
+.admin-container li{
+    display: inline-block;
+}
+
+#shoeBack{
+    margin-top: 2%;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.field-validation-error{
+    color: red;
+}

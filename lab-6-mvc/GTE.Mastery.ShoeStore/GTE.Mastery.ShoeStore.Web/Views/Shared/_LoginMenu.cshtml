@@ -1,0 +1,20 @@
+﻿@if (!User.Identity.IsAuthenticated)
+{
+    <li class="nav-item">
+        <a class="btn btn-info" asp-controller="Account" asp-action="Register">Register</a>
+    </li>
+    <li class="nav-item">
+        <a class="btn btn-info" asp-controller="Account" asp-action="Login">Log in</a>
+    </li>
+}
+else
+{ 
+    <li class="nav-item">
+        <p>Hello, @User.Identity.Name</p>
+    </li>
+    <li class="nav-item">
+        <form method="post" asp-controller="Account" asp-action="Logout">
+            <input type="submit" class="btn btn-info" value="Log out">
+        </form>
+    </li>
+}
